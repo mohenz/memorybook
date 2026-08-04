@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="pageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- High-quality rounded background -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Outer Ring Shadow & Notebook Base -->
+  <g filter="url(#shadow)">
+    <!-- Notebook Book Body -->
+    <rect x="120" y="80" width="280" height="352" rx="28" fill="url(#pageGrad)" />
+    
+    <!-- Spine binding backplate -->
+    <path d="M120 80h30v352h-30z" fill="#e2e8f0" opacity="0.8" />
+  </g>
+
+  <!-- Left Spine Rings (Binder spiral) -->
+  <g fill="#94a3b8">
+    <rect x="105" y="120" width="30" height="12" rx="6" />
+    <rect x="105" y="170" width="30" height="12" rx="6" />
+    <rect x="105" y="220" width="30" height="12" rx="6" />
+    <rect x="105" y="270" width="30" height="12" rx="6" />
+    <rect x="105" y="320" width="30" height="12" rx="6" />
+    <rect x="105" y="370" width="30" height="12" rx="6" />
+  </g>
+
+  <!-- Notebook Page Details -->
+  <!-- Red vertical margin line -->
+  <line x1="170" y1="80" x2="170" y2="432" stroke="#fca5a5" stroke-width="3" />
+
+  <!-- Blue horizontal ruled lines -->
+  <g stroke="#e2e8f0" stroke-width="4" stroke-linecap="round">
+    <line x1="190" y1="140" x2="360" y2="140" />
+    <line x1="190" y1="190" x2="360" y2="190" />
+    <line x1="190" y1="240" x2="360" y2="240" />
+    <line x1="190" y1="290" x2="360" y2="290" />
+    <line x1="190" y1="340" x2="360" y2="340" />
+  </g>
+
+  <!-- Stylized aesthetic checkmark/draw on page representing notes -->
+  <path d="M210 245 l30 30 l70 -70" fill="none" stroke="#3b82f6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Dynamic gold premium star embellishment -->
+  <path d="M370 120 l5 15 l15 5 l-15 5 l-5 15 l-5 -15 l-15 -5 l15 -5 z" fill="#fbbf24" />
+</svg>

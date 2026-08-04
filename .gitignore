@@ -1,0 +1,8 @@
+.env.local
+config/*.cfg
+node_modules/
+dist/
+backups/
+test-results/
+.project-control-update.patch
+*.log
