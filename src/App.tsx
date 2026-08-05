@@ -10,8 +10,8 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  Plus, 
-  Search, 
+  Plus,
+  Search,
   SlidersHorizontal,
   FileText,
   Image as ImageIcon,
@@ -21,6 +21,7 @@ import {
   CalendarDays,
   RotateCcw,
   Trash2,
+  Check,
 } from 'lucide-react';
 import { Note, Group, Schedule, ScreenType, NotificationSettings } from './types';
 import { ScheduleDraft } from './components/calendar/ScheduleFormModal';
@@ -145,7 +146,8 @@ export default function App() {
   const [selectedNoteId, setSelectedNoteId] = useState<string>('note-1');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [dashboardSearchQuery, setDashboardSearchQuery] = useState('');
-  const [dashboardSortDesc, setDashboardSortDesc] = useState(true);
+  const [dashboardSortMode, setDashboardSortMode] = useState<'date-desc' | 'date-asc' | 'group'>('date-desc');
+  const [showDashboardSortMenu, setShowDashboardSortMenu] = useState(false);
   const [prefilledDate, setPrefilledDate] = useState<string | null>(null);
   const draftNoteIdRef = useRef<string | null>(null);
 
@@ -229,11 +231,25 @@ export default function App() {
         );
       })
       .sort((a, b) => {
+        // dateString is day-only (e.g. "2026-08-05"), so same-day notes tie here.
+        // Fall back to the creation timestamp embedded in the id (note-<Date.now()>)
+        // to keep same-day notes in a stable, direction-aware order.
         const timeA = new Date(a.dateString).getTime() || 0;
         const timeB = new Date(b.dateString).getTime() || 0;
-        return dashboardSortDesc ? timeB - timeA : timeA - timeB;
+        const createdA = Number(a.id.split('-').pop()) || 0;
+        const createdB = Number(b.id.split('-').pop()) || 0;
+        if (dashboardSortMode === 'group') {
+          const groupA = groups.find(g => g.id === a.groupId)?.name || '';
+          const groupB = groups.find(g => g.id === b.groupId)?.name || '';
+          const groupCompare = groupA.localeCompare(groupB, 'ko');
+          if (groupCompare !== 0) return groupCompare;
+          return (timeB - timeA) || (createdB - createdA);
+        }
+        return dashboardSortMode === 'date-asc'
+          ? (timeA - timeB) || (createdA - createdB)
+          : (timeB - timeA) || (createdB - createdA);
       });
-  }, [notes, activeGroupId, dashboardSearchQuery, dashboardSortDesc]);
+  }, [notes, activeGroupId, dashboardSearchQuery, dashboardSortMode, groups]);
 
   // Active note detail binding
   const selectedNote = useMemo(() => {
@@ -723,13 +739,37 @@ export default function App() {
                         {activeGroupId !== 'all' && activeGroupId !== 'starred' && activeGroupId !== 'trash' && (groups.find(g => g.id === activeGroupId)?.name + ' 폴더')}
                       </h2>
                       
-                      <button 
-                        onClick={() => setDashboardSortDesc(!dashboardSortDesc)}
-                        className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors cursor-pointer"
-                        title={dashboardSortDesc ? "오래된 순 정렬" : "최신 순 정렬"}
-                      >
-                        <SlidersHorizontal className="w-4 h-4" />
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowDashboardSortMenu(!showDashboardSortMenu)}
+                          className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors cursor-pointer"
+                          title="정렬 방식 선택"
+                        >
+                          <SlidersHorizontal className="w-4 h-4" />
+                        </button>
+
+                        {showDashboardSortMenu && (
+                          <div className="absolute right-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl w-40 py-2 z-30 animate-fade-in-scale">
+                            {([
+                              { mode: 'date-desc', label: '최신순' },
+                              { mode: 'date-asc', label: '오래된순' },
+                              { mode: 'group', label: '그룹별' },
+                            ] as const).map(({ mode, label }) => (
+                              <button
+                                key={mode}
+                                onClick={() => {
+                                  setDashboardSortMode(mode);
+                                  setShowDashboardSortMenu(false);
+                                }}
+                                className="w-full flex items-center justify-between gap-2 px-4 py-2 text-xs font-bold text-on-surface hover:bg-surface transition-colors"
+                              >
+                                {label}
+                                {dashboardSortMode === mode && <Check className="w-3.5 h-3.5 text-primary" />}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Scrollable Cards list */}
