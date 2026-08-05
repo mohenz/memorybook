@@ -23,7 +23,7 @@ import {
   Trash2,
   Check,
 } from 'lucide-react';
-import { Note, Group, Schedule, ScreenType, NotificationSettings } from './types';
+import { Note, Group, Schedule, ScreenType, NotificationSettings, TodoStatus } from './types';
 import { ScheduleDraft } from './components/calendar/ScheduleFormModal';
 import { PREMIUM_IMAGES } from './data';
 import SplashView from './components/SplashView';
@@ -31,6 +31,7 @@ import Sidebar from './components/Sidebar';
 import NoteDetail from './components/NoteDetail';
 import NoteEditor from './components/NoteEditor';
 import SearchView from './components/SearchView';
+import TodoListView from './components/TodoListView';
 import CalendarView from './components/CalendarView';
 import SettingsModal from './components/SettingsModal';
 import SchedulePopupModal from './components/SchedulePopupModal';
@@ -282,13 +283,13 @@ export default function App() {
     ));
   };
 
-  const handleToggleChecklistItem = (noteId: string, itemId: string) => {
+  const handleSetChecklistItemStatus = (noteId: string, itemId: string, status: TodoStatus) => {
     setNotes(prev => prev.map(note => {
       if (note.id === noteId) {
         return {
           ...note,
-          checklist: note.checklist.map(item => 
-            item.id === itemId ? { ...item, done: !item.done } : item
+          checklist: note.checklist.map(item =>
+            item.id === itemId ? { ...item, status, done: status === 'done' } : item
           )
         };
       }
@@ -648,6 +649,18 @@ export default function App() {
           <ArchiveView integratedUser={archiveUser} onIntegratedLogout={logoutArchiveAccount} />
         </div>
       )}
+
+      {screen === 'TODOS' && (
+        <TodoListView
+          notes={notes}
+          groups={groups}
+          onSetItemStatus={handleSetChecklistItemStatus}
+          onSelectNote={(id) => {
+            setSelectedNoteId(id);
+            setScreen('DASHBOARD');
+          }}
+        />
+      )}
     </>
   );
 
@@ -856,7 +869,7 @@ export default function App() {
                     onDelete={handleDeleteNote}
                     onRestore={handleRestoreNote}
                     onToggleFavorite={handleToggleFavorite}
-                    onToggleChecklistItem={handleToggleChecklistItem}
+                    onSetChecklistItemStatus={handleSetChecklistItemStatus}
                   />
 
                 </div>

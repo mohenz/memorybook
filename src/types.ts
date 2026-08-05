@@ -4,10 +4,13 @@ export interface Group {
   icon?: string; // name of lucide icon
 }
 
+export type TodoStatus = 'todo' | 'in_progress' | 'done';
+
 export interface ChecklistItem {
   id: string;
   text: string;
   done: boolean;
+  status?: TodoStatus; // 예정/진행/완료; falls back to (done ? 'done' : 'todo') when absent
 }
 
 export interface Note {
@@ -24,7 +27,7 @@ export interface Note {
   checklist: ChecklistItem[];
 }
 
-export type ScreenType = 'SPLASH' | 'DASHBOARD' | 'EDITOR' | 'SEARCH' | 'CALENDAR' | 'ARCHIVE';
+export type ScreenType = 'SPLASH' | 'DASHBOARD' | 'EDITOR' | 'SEARCH' | 'CALENDAR' | 'ARCHIVE' | 'TODOS';
 
 export type SchedulePriority = 'high' | 'normal' | 'low';
 

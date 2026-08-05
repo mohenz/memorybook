@@ -13,7 +13,8 @@ import {
   User, 
   Compass, 
   Folder,
-  Plus
+  Plus,
+  ListTodo
 } from 'lucide-react';
 import { Group, ScreenType } from '../types';
 
@@ -138,6 +139,18 @@ export default function Sidebar({
           >
             <Star className={`w-5 h-5 ${currentScreen === 'DASHBOARD' && activeGroupId === 'starred' ? 'fill-current' : ''}`} />
             <span>중요 메모</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('TODOS')}
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+              currentScreen === 'TODOS'
+                ? 'bg-primary text-white shadow-soft font-semibold'
+                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+            }`}
+          >
+            <ListTodo className="w-5 h-5" />
+            <span>TO-DO LIST</span>
           </button>
 
           {/* Group Folder Divider */}

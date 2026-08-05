@@ -10,15 +10,15 @@ import {
   Mic, 
   Share2, 
   MoreVertical,
-  CheckSquare,
-  Square,
   FolderOpen,
   X,
   Download,
   RotateCcw,
 } from 'lucide-react';
-import { Note, Group } from '../types';
+import { Note, Group, TodoStatus } from '../types';
 import { downloadMarkdownFile } from '../utils/markdownExport';
+import { getItemStatus } from '../utils/todoStatus';
+import TodoStatusControl from './TodoStatusControl';
 
 interface NoteDetailProps {
   note: Note | null;
@@ -27,7 +27,7 @@ interface NoteDetailProps {
   onDelete: (id: string) => void;
   onRestore: (id: string) => void;
   onToggleFavorite: (id: string) => void;
-  onToggleChecklistItem: (noteId: string, itemId: string) => void;
+  onSetChecklistItemStatus: (noteId: string, itemId: string, status: TodoStatus) => void;
 }
 
 export default function NoteDetail({
@@ -37,7 +37,7 @@ export default function NoteDetail({
   onDelete,
   onRestore,
   onToggleFavorite,
-  onToggleChecklistItem
+  onSetChecklistItemStatus
 }: NoteDetailProps) {
   const [showShareToast, setShowShareToast] = useState(false);
   const [showFormatToast, setShowFormatToast] = useState(false);
@@ -190,31 +190,31 @@ export default function NoteDetail({
               <div className="space-y-4 my-6">
                 <h4 className="font-bold text-lg text-on-surface flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-primary" />
-                  <span>주요 일정 / 할 일</span>
+                  <span>TO-DO LIST</span>
                 </h4>
-                <ul className="space-y-3 pl-1 border-l-4 border-primary/20">
-                  {note.checklist.map((item) => (
-                    <li 
-                      key={item.id} 
-                      onClick={() => onToggleChecklistItem(note.id, item.id)}
-                      className="flex items-start gap-3 cursor-pointer group select-none pl-4 py-0.5"
-                    >
-                      <button className="text-primary hover:scale-105 transition-transform shrink-0 mt-0.5">
-                        {item.done ? (
-                          <CheckSquare className="w-5 h-5 text-primary fill-primary/10" />
-                        ) : (
-                          <Square className="w-5 h-5 text-outline-variant group-hover:text-primary" />
-                        )}
-                      </button>
-                      <span className={`text-base font-medium transition-all ${
-                        item.done 
-                          ? 'line-through text-outline font-normal opacity-60' 
-                          : 'text-on-surface-variant group-hover:text-on-surface'
-                      }`}>
-                        {item.text}
-                      </span>
-                    </li>
-                  ))}
+                <ul className="space-y-2 pl-1 border-l-4 border-primary/20">
+                  {note.checklist.map((item) => {
+                    const status = getItemStatus(item);
+                    return (
+                      <li
+                        key={item.id}
+                        className="flex flex-wrap items-center justify-between gap-2 pl-4 py-1"
+                      >
+                        <span className={`text-base font-medium transition-all ${
+                          status === 'done'
+                            ? 'line-through text-outline font-normal opacity-60'
+                            : 'text-on-surface-variant'
+                        }`}>
+                          {item.text}
+                        </span>
+                        <TodoStatusControl
+                          status={status}
+                          onChange={(next) => onSetChecklistItemStatus(note.id, item.id, next)}
+                          size="sm"
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
