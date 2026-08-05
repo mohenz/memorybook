@@ -215,18 +215,24 @@ export default function NoteEditor({
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
-          {/* Group Folder Dropdown Selector */}
-          <div className="flex items-center bg-surface px-3 py-1.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface shrink-0">
-            <span className="text-outline mr-2 text-xs uppercase">그룹:</span>
-            <select 
-              value={groupId} 
-              onChange={(e) => setGroupId(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-primary cursor-pointer focus:outline-none"
-            >
-              {groups.map(g => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
+          {/* Group Selector */}
+          <div className="flex items-center gap-1 bg-surface px-2 py-1 rounded-xl border border-outline-variant shrink-0 overflow-x-auto no-scrollbar">
+            <span className="text-outline mr-1 pl-1 text-xs uppercase shrink-0">그룹:</span>
+            {groups.map(g => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setGroupId(g.id)}
+                aria-pressed={groupId === g.id}
+                className={`px-3 py-1 rounded-lg text-sm font-bold whitespace-nowrap transition-all shrink-0 ${
+                  groupId === g.id
+                    ? 'bg-primary text-white shadow-soft'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
+                }`}
+              >
+                {g.name}
+              </button>
+            ))}
           </div>
 
           <button 
