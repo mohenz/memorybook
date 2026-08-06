@@ -75,7 +75,7 @@ export default function TimeGrid({ days, schedulesByDate, onSelectSchedule, onCr
             {HOURS.map((hour) => (
               <div
                 key={hour}
-                className="absolute left-0 right-0 -translate-y-1/2 text-right pr-1.5 md:pr-2 text-[10px] font-semibold text-outline"
+                className="absolute left-0 right-0 -translate-y-1/2 text-right pr-1.5 md:pr-2 text-[10px] font-semibold text-on-surface-variant"
                 style={{ top: hour * HOUR_HEIGHT_PX }}
               >
                 {String(hour).padStart(2, '0')}:00

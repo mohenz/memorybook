@@ -240,9 +240,10 @@ export default function App() {
         const createdA = Number(a.id.split('-').pop()) || 0;
         const createdB = Number(b.id.split('-').pop()) || 0;
         if (dashboardSortMode === 'group') {
-          const groupA = groups.find(g => g.id === a.groupId)?.name || '';
-          const groupB = groups.find(g => g.id === b.groupId)?.name || '';
-          const groupCompare = groupA.localeCompare(groupB, 'ko');
+          // Group priority = position in the groups list (settings > 폴더 우선순위).
+          const priorityA = groups.findIndex(g => g.id === a.groupId);
+          const priorityB = groups.findIndex(g => g.id === b.groupId);
+          const groupCompare = (priorityA === -1 ? Infinity : priorityA) - (priorityB === -1 ? Infinity : priorityB);
           if (groupCompare !== 0) return groupCompare;
           return (timeB - timeA) || (createdB - createdA);
         }
@@ -275,6 +276,18 @@ export default function App() {
     setGroups(prev => prev.map(group => (
       group.id === groupId ? { ...group, name: newName } : group
     )));
+  };
+
+  // Group display order doubles as priority: index 0 is the highest priority.
+  const handleReorderGroup = (groupId: string, direction: 'up' | 'down') => {
+    setGroups(prev => {
+      const index = prev.findIndex(group => group.id === groupId);
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (index === -1 || targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+      return next;
+    });
   };
 
   const handleToggleFavorite = (noteId: string) => {
@@ -960,6 +973,7 @@ export default function App() {
           onToggleDarkMode={(enabled) => setDarkMode(enabled)}
           groups={groups}
           onRenameGroup={handleRenameFolder}
+          onReorderGroup={handleReorderGroup}
           archiveUserEmail={archiveUser?.email || ''}
           archiveStatus={archiveStatus}
           notificationSettings={notificationSettings}

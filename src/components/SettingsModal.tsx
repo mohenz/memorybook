@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sun, Moon, Check, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell } from 'lucide-react';
+import { X, Sun, Moon, Check, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
 import { Group, NotificationSettings } from '../types';
 
 const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -16,6 +16,7 @@ interface SettingsModalProps {
   onToggleDarkMode: (enabled: boolean) => void;
   groups: Group[];
   onRenameGroup: (groupId: string, newName: string) => void;
+  onReorderGroup: (groupId: string, direction: 'up' | 'down') => void;
   archiveUserEmail: string;
   archiveStatus: string;
   supabaseConfigured: boolean;
@@ -32,10 +33,15 @@ interface SettingsModalProps {
 
 interface FolderRenameRowProps {
   group: Group;
+  priority: number;
   onRename: (groupId: string, newName: string) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  disableUp: boolean;
+  disableDown: boolean;
 }
 
-function FolderRenameRow({ group, onRename }: FolderRenameRowProps) {
+function FolderRenameRow({ group, priority, onRename, onMoveUp, onMoveDown, disableUp, disableDown }: FolderRenameRowProps) {
   const [name, setName] = useState(group.name);
 
   const commit = () => {
@@ -51,6 +57,9 @@ function FolderRenameRow({ group, onRename }: FolderRenameRowProps) {
 
   return (
     <div className="flex items-center gap-2.5 bg-surface dark:bg-surface-container-lowest rounded-xl border border-outline-variant/30 px-3 py-2">
+      <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+        {priority}
+      </span>
       <Folder className="w-4 h-4 text-primary shrink-0" />
       <input
         type="text"
@@ -66,6 +75,26 @@ function FolderRenameRow({ group, onRename }: FolderRenameRowProps) {
         }}
         className="flex-1 h-9 px-2 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary rounded-lg text-sm font-semibold text-on-surface"
       />
+      <div className="flex flex-col shrink-0">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={disableUp}
+          aria-label={`${group.name} 폴더 우선순위 올리기`}
+          className="p-0.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-primary disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant transition-colors"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={disableDown}
+          aria-label={`${group.name} 폴더 우선순위 내리기`}
+          className="p-0.5 rounded text-on-surface-variant hover:bg-surface-container-high hover:text-primary disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-on-surface-variant transition-colors"
+        >
+          <ChevronDown className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -78,6 +107,7 @@ export default function SettingsModal({
   onToggleDarkMode,
   groups,
   onRenameGroup,
+  onReorderGroup,
   archiveUserEmail,
   archiveStatus,
   supabaseConfigured,
@@ -380,8 +410,8 @@ export default function SettingsModal({
           {activeTab === 'folders' && (
             <div className="space-y-4">
               <div className="p-4 bg-surface dark:bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-xs text-on-surface-variant leading-relaxed">
-                <span className="font-bold text-primary block mb-1">폴더 이름 관리</span>
-                메모를 분류하는 그룹 폴더의 이름을 수정할 수 있습니다. 입력 후 다른 곳을 클릭하거나 Enter를 누르면 저장됩니다.
+                <span className="font-bold text-primary block mb-1">폴더 이름 및 우선순위 관리</span>
+                이름은 입력 후 다른 곳을 클릭하거나 Enter를 누르면 저장됩니다. 화살표로 순서를 바꾸면 사이드바, 그룹 선택, 그룹별 정렬 등 앱 전반의 노출 순서에 반영됩니다.
               </div>
 
               {groups.length === 0 ? (
@@ -391,9 +421,17 @@ export default function SettingsModal({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {groups.map((group) => (
+                  {groups.map((group, index) => (
                     <div key={group.id}>
-                      <FolderRenameRow group={group} onRename={onRenameGroup} />
+                      <FolderRenameRow
+                        group={group}
+                        priority={index + 1}
+                        onRename={onRenameGroup}
+                        onMoveUp={() => onReorderGroup(group.id, 'up')}
+                        onMoveDown={() => onReorderGroup(group.id, 'down')}
+                        disableUp={index === 0}
+                        disableDown={index === groups.length - 1}
+                      />
                     </div>
                   ))}
                 </div>

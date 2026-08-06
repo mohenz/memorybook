@@ -18,6 +18,7 @@ const renderModal = (groups: Group[] = mockGroups) =>
       onToggleDarkMode={() => undefined}
       groups={groups}
       onRenameGroup={() => undefined}
+      onReorderGroup={() => undefined}
       archiveUserEmail=""
       archiveStatus=""
       supabaseConfigured
