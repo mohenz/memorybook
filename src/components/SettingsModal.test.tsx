@@ -29,6 +29,11 @@ const renderModal = (groups: Group[] = mockGroups) =>
   );
 
 describe('SettingsModal folder tab', () => {
+  it('uses a fixed responsive height for every tab', () => {
+    const markup = renderModal();
+    expect(markup).toContain('h-[720px] max-h-[calc(100dvh-2rem)]');
+  });
+
   it('renders the folder name management tab entry point', () => {
     const markup = renderModal();
     expect(markup).toContain('폴더 이름 관리');

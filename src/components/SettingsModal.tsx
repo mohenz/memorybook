@@ -147,7 +147,7 @@ export default function SettingsModal({
   return (
     <div className="fixed inset-0 bg-black/55 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in-scale p-4">
       {/* Modal Card */}
-      <div className="bg-white dark:bg-surface-container-low border border-outline-variant dark:border-outline/40 rounded-3xl w-[520px] max-w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-surface-container-low border border-outline-variant dark:border-outline/40 rounded-3xl w-[520px] max-w-full h-[720px] max-h-[calc(100dvh-2rem)] shadow-2xl overflow-hidden flex flex-col">
         
         {/* Modal Header */}
         <header className="px-6 py-5 border-b border-grid-line dark:border-outline/20 flex items-center justify-between shrink-0">
@@ -238,7 +238,7 @@ export default function SettingsModal({
         </div>
 
         {/* Tab Contents */}
-        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 min-h-0 space-y-6">
           {activeTab === 'profile' && (
             <div className="space-y-6">
               

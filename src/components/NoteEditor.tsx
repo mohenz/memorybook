@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Note, Group, ChecklistItem } from '../types';
 import { PREMIUM_IMAGES } from '../data';
+import GroupButtonSelector from './GroupButtonSelector';
 
 interface NoteEditorProps {
   note: Note | null; // null if creating a new note
@@ -195,8 +196,9 @@ export default function NoteEditor({
     <section className="flex-1 bg-background flex flex-col overflow-hidden h-full relative">
       
       {/* Editor Top App Bar */}
-      <header className="sticky top-0 w-full flex flex-col md:flex-row justify-between gap-3 md:items-center px-4 md:px-6 py-3 md:h-16 z-20 bg-background/95 backdrop-blur-md border-b border-grid-line shadow-sm">
-        <div className="flex items-center gap-4 flex-1 w-full">
+      <header className="sticky top-0 w-full flex flex-col gap-3 px-4 md:px-6 py-3 z-20 bg-background/95 backdrop-blur-md border-b border-grid-line shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
           <button 
             onClick={onCancel}
             className="hover:bg-surface-container rounded-full p-2 transition-all active:scale-95 text-on-surface"
@@ -212,25 +214,11 @@ export default function NoteEditor({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
-          {/* Group Selector */}
-          <div className="flex items-center bg-surface px-3 py-1.5 rounded-xl border border-outline-variant text-sm font-semibold text-on-surface shrink-0">
-            <span className="text-outline mr-2 text-xs uppercase shrink-0">그룹:</span>
-            <select
-              value={groupId}
-              aria-label="그룹 선택"
-              onChange={(e) => setGroupId(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-primary cursor-pointer focus:outline-none"
-            >
-              {groups.map(g => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
           </div>
 
-          <button 
+          <div className="ml-auto flex items-center gap-2">
+            <GroupButtonSelector groups={groups} value={groupId} onChange={setGroupId} layout="wrap" />
+            <button
             onClick={handleSave}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:brightness-115 active:scale-95 transition-all text-sm font-semibold shadow-soft cursor-pointer shrink-0"
           >
@@ -244,7 +232,8 @@ export default function NoteEditor({
             title="이미지 첨부"
           >
             <ImageIcon className="w-5 h-5" />
-          </button>
+            </button>
+          </div>
         </div>
       </header>
 

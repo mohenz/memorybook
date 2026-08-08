@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Group, Note } from '../../types';
+import GroupButtonSelector from '../../components/GroupButtonSelector';
 
 interface MobileNoteEditorScreenProps {
   note: Note | null; // null when creating a new note
@@ -79,25 +80,11 @@ export default function MobileNoteEditorScreen({ note, groups, onAutoSave, onBac
           <span className="text-xs font-semibold text-on-surface-variant shrink-0" aria-live="polite">
             {status === 'saving' ? '저장 중' : status === 'saved' ? '저장됨' : ''}
           </span>
-          {groups.length > 0 && (
-            <div className="flex items-center bg-surface px-2.5 py-1.5 rounded-xl border border-outline-variant shrink-0">
-              <span className="text-outline mr-1.5 text-xs uppercase shrink-0">그룹:</span>
-              <select
-                value={groupId}
-                aria-label="그룹 선택"
-                onChange={(event) => setGroupId(event.target.value)}
-                className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-primary cursor-pointer focus:outline-none max-w-28 truncate"
-              >
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>{group.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 py-4 flex flex-col gap-3">
+        <GroupButtonSelector groups={groups} value={groupId} onChange={setGroupId} layout="grid" />
         <input
           type="text"
           value={title}

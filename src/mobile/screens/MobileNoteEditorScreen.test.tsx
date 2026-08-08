@@ -48,7 +48,7 @@ describe('MobileNoteEditorScreen', () => {
     expect(markup).toContain('본문 내용');
   });
 
-  it('renders a group selector listing every group', () => {
+  it('renders every group as a visible selection button', () => {
     const markup = render(buildNote());
 
     expect(markup).toContain('aria-label="그룹 선택"');
@@ -59,13 +59,13 @@ describe('MobileNoteEditorScreen', () => {
   it('preselects the group the note already belongs to', () => {
     const markup = render(buildNote({ groupId: 'work' }));
 
-    expect(markup).toContain('<option value="work" selected="">업무</option>');
+    expect(markup).toMatch(/aria-checked="true"[^>]*>[\s\S]*?업무<\/span><\/button>/);
   });
 
   it('falls back to the first group when creating a new note', () => {
     const markup = render(null);
 
-    expect(markup).toContain('<option value="personal" selected="">개인</option>');
+    expect(markup).toMatch(/aria-checked="true"[^>]*>[\s\S]*?개인<\/span><\/button>/);
   });
 
   it('hides the group selector when there are no groups', () => {
