@@ -169,71 +169,71 @@ export default function SettingsModal({
         </header>
 
         {/* Tab Selection */}
-        <div className="flex overflow-x-auto no-scrollbar border-b border-grid-line dark:border-outline/10 px-6 bg-surface-container-low dark:bg-surface-container-lowest shrink-0">
+        <div className="flex border-b border-grid-line dark:border-outline/10 px-2 bg-surface-container-low dark:bg-surface-container-lowest shrink-0">
           <button
             onClick={() => setActiveTab('profile')}
             title="프로필 이미지 변경"
             aria-label="프로필 이미지 변경"
-            className={`py-3.5 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               activeTab === 'profile'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <User className="w-4 h-4" />
-            <span className="hidden md:inline">프로필 이미지 변경</span>
+            <User className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">프로필</span>
           </button>
           <button
             onClick={() => setActiveTab('theme')}
             title="화면 테마 설정"
             aria-label="화면 테마 설정"
-            className={`py-3.5 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               activeTab === 'theme'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Sun className="w-4 h-4" />
-            <span className="hidden md:inline">화면 테마 설정</span>
+            <Sun className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">테마</span>
           </button>
           <button
             onClick={() => setActiveTab('folders')}
             title="폴더 이름 관리"
             aria-label="폴더 이름 관리"
-            className={`py-3.5 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               activeTab === 'folders'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Folder className="w-4 h-4" />
-            <span className="hidden md:inline">폴더 이름 관리</span>
+            <Folder className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">폴더</span>
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
             title="알림 설정"
             aria-label="알림 설정"
-            className={`py-3.5 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               activeTab === 'notifications'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Bell className="w-4 h-4" />
-            <span className="hidden md:inline">알림</span>
+            <Bell className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">알림</span>
           </button>
           <button
             onClick={() => setActiveTab('archive')}
             title="자료실 계정"
             aria-label="자료실 계정"
-            className={`py-3.5 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               activeTab === 'archive'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Cloud className="w-4 h-4" />
-            <span className="hidden md:inline">자료실 계정</span>
+            <Cloud className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">자료실</span>
           </button>
         </div>
 
