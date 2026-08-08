@@ -934,6 +934,7 @@ export default function App() {
           {screen === 'EDITOR' && (
             <MobileNoteEditorScreen
               note={editingNote}
+              groups={groups}
               onAutoSave={handleAutoSaveNote}
               onBack={() => {
                 draftNoteIdRef.current = null;

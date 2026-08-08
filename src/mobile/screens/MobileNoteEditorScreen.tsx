@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Note } from '../../types';
+import { Group, Note } from '../../types';
 
 interface MobileNoteEditorScreenProps {
   note: Note | null; // null when creating a new note
+  groups: Group[];
   onAutoSave: (fields: Partial<Note>) => void;
   onBack: () => void;
 }
@@ -18,13 +19,14 @@ function formatUpdatedAt() {
   );
 }
 
-export default function MobileNoteEditorScreen({ note, onAutoSave, onBack }: MobileNoteEditorScreenProps) {
+export default function MobileNoteEditorScreen({ note, groups, onAutoSave, onBack }: MobileNoteEditorScreenProps) {
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
+  const [groupId, setGroupId] = useState(note?.groupId || groups[0]?.id || '');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const lastSavedSnapshotRef = useRef('');
 
-  const snapshot = useMemo(() => JSON.stringify({ title, content }), [title, content]);
+  const snapshot = useMemo(() => JSON.stringify({ title, content, groupId }), [title, content, groupId]);
 
   useEffect(() => {
     lastSavedSnapshotRef.current = snapshot;
@@ -35,6 +37,7 @@ export default function MobileNoteEditorScreen({ note, onAutoSave, onBack }: Mob
   const buildPayload = (): Partial<Note> => ({
     title: title.trim() || '제목 없는 메모',
     content,
+    ...(groupId ? { groupId } : {}),
     updatedAt: formatUpdatedAt(),
   });
 
@@ -72,9 +75,26 @@ export default function MobileNoteEditorScreen({ note, onAutoSave, onBack }: Mob
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <span className="text-xs font-semibold text-on-surface-variant pr-3" aria-live="polite">
-          {status === 'saving' ? '저장 중' : status === 'saved' ? '저장됨' : ''}
-        </span>
+        <div className="flex items-center gap-2 pr-2 min-w-0">
+          <span className="text-xs font-semibold text-on-surface-variant shrink-0" aria-live="polite">
+            {status === 'saving' ? '저장 중' : status === 'saved' ? '저장됨' : ''}
+          </span>
+          {groups.length > 0 && (
+            <div className="flex items-center bg-surface px-2.5 py-1.5 rounded-xl border border-outline-variant shrink-0">
+              <span className="text-outline mr-1.5 text-xs uppercase shrink-0">그룹:</span>
+              <select
+                value={groupId}
+                aria-label="그룹 선택"
+                onChange={(event) => setGroupId(event.target.value)}
+                className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-primary cursor-pointer focus:outline-none max-w-28 truncate"
+              >
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>{group.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 py-4 flex flex-col gap-3">
