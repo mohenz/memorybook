@@ -114,7 +114,7 @@ describe('MobileNoteDetailScreen', () => {
 });
 
 describe('MobileAppShell', () => {
-  it('opens on the notes list tab with the bottom navigation visible', () => {
+  it('opens on the calendar tab with the bottom navigation visible', () => {
     const markup = renderToStaticMarkup(
       <MobileAppShell
         notes={[buildNote()]}
@@ -136,7 +136,8 @@ describe('MobileAppShell', () => {
       />
     );
 
-    expect(markup).toContain('회의 아이디어');
+    expect(markup).toContain('당일 일정');
+    expect(markup).not.toContain('회의 아이디어');
     expect(markup).toContain('메모');
     expect(markup).toContain('캘린더');
     expect(markup).toContain('TO-DO');

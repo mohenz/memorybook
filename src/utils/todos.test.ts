@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Note, TodoItem } from '../types';
-import { getRemainingDayLabel, getTodosForDate, migrateLegacyChecklistItems, sortTodosByTargetProximity } from './todos';
+import { getOpenTodosWithTargetDate, getRemainingDayLabel, getTodosForDate, migrateLegacyChecklistItems, sortTodosByTargetProximity } from './todos';
 
 const note: Note = {
   id: 'note-1', title: '기존 메모', content: '', groupId: 'personal',
@@ -28,6 +28,19 @@ describe('independent todos', () => {
     expect(getTodosForDate([todo], '2026-08-08')).toEqual([todo]);
     expect(getTodosForDate([todo], '2026-08-10')).toEqual([todo]);
     expect(getTodosForDate([todo], '2026-08-09')).toEqual([]);
+  });
+
+  it('shows every incomplete todo with a target date, including overdue items', () => {
+    const scheduled = { ...todo, id: 'scheduled', status: 'todo' as const };
+    const inProgress = { ...todo, id: 'progress', status: 'in_progress' as const };
+    const completed = { ...todo, id: 'completed', status: 'done' as const };
+    const future = { ...todo, id: 'future', targetDateString: '2026-08-12' };
+    const past = { ...todo, id: 'past', targetDateString: '2026-08-09' };
+    const noTarget = { ...todo, id: 'no-target', targetDateString: undefined };
+
+    expect(getOpenTodosWithTargetDate([scheduled, inProgress, completed, future, past, noTarget]).map(item => item.id)).toEqual([
+      'scheduled', 'progress', 'future', 'past',
+    ]);
   });
 
   it('formats remaining and overdue days', () => {

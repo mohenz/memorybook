@@ -42,6 +42,13 @@ export function getTodosForDate(todos: TodoItem[], dateString: string) {
   ));
 }
 
+export function getOpenTodosWithTargetDate(todos: TodoItem[]) {
+  return todos.filter(todo => (
+    Boolean(todo.targetDateString)
+    && (todo.status === 'todo' || todo.status === 'in_progress')
+  ));
+}
+
 export function sortTodosByTargetProximity(todos: TodoItem[], todayDateString: string) {
   return [...todos].sort((left, right) => {
     if (!left.targetDateString && right.targetDateString) return 1;

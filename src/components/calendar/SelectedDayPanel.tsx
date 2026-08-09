@@ -1,14 +1,17 @@
 import { CalendarPlus, FilePlus2 } from 'lucide-react';
-import { Group, Note, Schedule } from '../../types';
+import { Group, Note, Schedule, TodoItem } from '../../types';
 import HolidayBadges from '../../features/holidays/HolidayBadges';
 import { KoreanHoliday } from '../../features/holidays/koreanHolidayTypes';
 import CalendarNoteCard from './CalendarNoteCard';
 import { PRIORITY_COLORS } from './scheduleUtils';
+import { TODO_STATUS_LABELS } from '../../utils/todoStatus';
 
 interface SelectedDayPanelProps {
   selectedDate: Date;
   notes: Note[];
   schedules: Schedule[];
+  todos: TodoItem[];
+  todayDateString: string;
   holidays: KoreanHoliday[];
   groups: Group[];
   onSelectNote: (noteId: string) => void;
@@ -21,6 +24,8 @@ export default function SelectedDayPanel({
   selectedDate,
   notes,
   schedules,
+  todos,
+  todayDateString,
   holidays,
   groups,
   onSelectNote,
@@ -85,6 +90,41 @@ export default function SelectedDayPanel({
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-grid-line/60" />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider">TO-DO</h3>
+              <span className="text-xs bg-surface-container-high px-2 py-0.5 rounded-full text-on-surface-variant font-bold">
+                {todos.length}개
+              </span>
+            </div>
+            {todos.length === 0 ? (
+              <p className="text-xs text-outline py-2">오늘 예정 및 진행인 할일이 없습니다</p>
+            ) : (
+              <div className="space-y-2">
+                {todos.map(todo => {
+                  const isOverdue = Boolean(todo.targetDateString && todo.targetDateString < todayDateString);
+                  return (
+                  <div key={todo.id} className="rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2.5">
+                    <div className="flex items-start gap-2">
+                      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-extrabold ${isOverdue ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+                        {isOverdue ? '지연' : TODO_STATUS_LABELS[todo.status]}
+                      </span>
+                      <span className={`min-w-0 flex-1 text-sm font-bold ${todo.status === 'done' ? 'line-through text-outline' : 'text-on-surface'}`}>
+                        {todo.text}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] font-semibold text-outline">
+                      등록 {todo.createdDateString}{todo.targetDateString ? ` · 목표 ${todo.targetDateString}` : ''}
+                    </p>
+                  </div>
+                  );
+                })}
               </div>
             )}
           </div>

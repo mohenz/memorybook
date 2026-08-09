@@ -89,7 +89,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
 
 function getInitialScreen(): ScreenType {
   if (typeof window === 'undefined') return 'SPLASH';
-  if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === '1') return 'DASHBOARD';
+  if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === '1') return 'CALENDAR';
   window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
   return 'SPLASH';
 }
@@ -536,7 +536,7 @@ export default function App() {
 
   // Splash complete
   const handleSplashComplete = () => {
-    setScreen('DASHBOARD');
+    setScreen('CALENDAR');
   };
 
   const handleUnifiedLogin = async (event: React.FormEvent) => {
@@ -672,6 +672,7 @@ export default function App() {
 
       {screen === 'CALENDAR' && (
         <CalendarView
+          initialViewMode="agenda"
           notes={notes}
           schedules={activeSchedules}
           todos={todos}

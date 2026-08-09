@@ -49,7 +49,7 @@ interface MobileAppShellProps {
 }
 
 export default function MobileAppShell({
-  initialTab = 'NOTES',
+  initialTab = 'CALENDAR',
   notes,
   groups,
   schedules,

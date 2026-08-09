@@ -74,11 +74,10 @@ export default function Sidebar({
           <button
             type="button"
             onClick={() => {
-              setScreen('DASHBOARD');
-              setActiveGroupId('all');
+              setScreen('CALENDAR');
             }}
-            title="첫 화면으로 이동"
-            aria-label="첫 화면으로 이동"
+            title="전체 일정으로 이동"
+            aria-label="전체 일정으로 이동"
             className="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant shadow-sm shrink-0 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             <img 

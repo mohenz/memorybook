@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import CalendarView, { clampDayToMonth } from './CalendarView';
-import { Note, Schedule } from '../types';
+import { Note, Schedule, TodoItem } from '../types';
 
-const renderCalendar = (date: Date, schedules: Schedule[] = [], notes: Note[] = []) => {
+const renderCalendar = (date: Date, schedules: Schedule[] = [], notes: Note[] = [], todos: TodoItem[] = []) => {
   vi.setSystemTime(date);
   return renderToStaticMarkup(
     <CalendarView
       notes={notes}
       schedules={schedules}
-      todos={[]}
+      todos={todos}
       groups={[]}
       onSelectNote={() => undefined}
       onAddNote={() => undefined}
@@ -103,6 +103,51 @@ describe('CalendarView selected-day panel', () => {
       'class="text-xs font-bold truncate min-w-0 text-error">이마트앱팀 미팅',
     );
 
+    vi.useRealTimers();
+  });
+
+  it('shows date-linked todos below schedules in the selected-day panel', () => {
+    vi.useFakeTimers();
+    const markup = renderCalendar(new Date(2026, 6, 23, 12), [], [], [{
+      id: 'todo-1',
+      text: '요구사항 확인',
+      status: 'in_progress' as const,
+      createdDateString: '2026-07-22',
+      targetDateString: '2026-07-23',
+      createdAt: '2026-07-22T00:00:00.000Z',
+      updatedAt: '2026-07-22T00:00:00.000Z',
+    }]);
+
+    expect(markup.indexOf('>일정<')).toBeLessThan(markup.indexOf('>TO-DO<'));
+    expect(markup.indexOf('>TO-DO<')).toBeLessThan(markup.indexOf('>메모<'));
+    expect(markup).toContain('요구사항 확인');
+    expect(markup).toContain('>진행<');
+    expect(markup).toContain('목표 2026-07-23');
+    vi.useRealTimers();
+  });
+
+  it('shows the requested empty message when the selected date has no active due todos', () => {
+    vi.useFakeTimers();
+    const markup = renderCalendar(new Date(2026, 6, 23, 12));
+    expect(markup).toContain('오늘 예정 및 진행인 할일이 없습니다');
+    vi.useRealTimers();
+  });
+
+  it('shows incomplete past-target todos as delayed', () => {
+    vi.useFakeTimers();
+    const markup = renderCalendar(new Date(2026, 6, 23, 12), [], [], [{
+      id: 'todo-overdue',
+      text: '지연된 확인 작업',
+      status: 'in_progress',
+      createdDateString: '2026-07-20',
+      targetDateString: '2026-07-22',
+      createdAt: '2026-07-20T00:00:00.000Z',
+      updatedAt: '2026-07-20T00:00:00.000Z',
+    }]);
+
+    expect(markup).toContain('지연된 확인 작업');
+    expect(markup).toContain('>지연<');
+    expect(markup).toContain('bg-error/10 text-error');
     vi.useRealTimers();
   });
 

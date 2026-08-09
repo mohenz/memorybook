@@ -21,6 +21,7 @@ import {
   shiftCalendarDate,
 } from './calendar/calendarUtils';
 import { groupSchedulesByDate } from './calendar/scheduleUtils';
+import { getOpenTodosWithTargetDate } from '../utils/todos';
 
 export { clampDayToMonth } from './calendar/calendarUtils';
 
@@ -30,6 +31,7 @@ type ScheduleModalState =
   | { mode: 'edit'; schedule: Schedule };
 
 interface CalendarViewProps {
+  initialViewMode?: CalendarViewMode;
   notes: Note[];
   schedules: Schedule[];
   todos: TodoItem[];
@@ -58,6 +60,7 @@ const MOVE_LABEL: Record<CalendarViewMode, string> = {
 };
 
 export default function CalendarView({
+  initialViewMode = 'month',
   notes,
   schedules,
   todos,
@@ -68,7 +71,7 @@ export default function CalendarView({
   onUpdateSchedule,
   onDeleteSchedule,
 }: CalendarViewProps) {
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>(initialViewMode);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [scheduleModal, setScheduleModal] = useState<ScheduleModalState>({ mode: 'closed' });
@@ -89,6 +92,7 @@ export default function CalendarView({
   const holidaysByDate = useMemo(() => groupKoreanHolidays(koreanHolidays), []);
   const selectedNotes = notesByDate.get(selectedDateString) || [];
   const selectedSchedules = schedulesByDate.get(selectedDateString) || [];
+  const selectedTodos = useMemo(() => getOpenTodosWithTargetDate(todos), [todos]);
   const selectedHolidays = holidaysByDate.get(selectedDateString) || [];
 
   const movePeriod = (offset: number) => {
@@ -237,6 +241,8 @@ export default function CalendarView({
               selectedDate={selectedDate}
               notes={selectedNotes}
               schedules={selectedSchedules}
+              todos={selectedTodos}
+              todayDateString={toLocalDateString()}
               holidays={selectedHolidays}
               groups={groups}
               onSelectNote={onSelectNote}
