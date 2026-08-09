@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Group, Note, Schedule } from '../types';
+import { Group, Note, Schedule, TodoStatus } from '../types';
 import MobileBottomNav, { MobileTab } from './MobileBottomNav';
 import MobileNoteListScreen from './screens/MobileNoteListScreen';
 import MobileNoteDetailScreen from './screens/MobileNoteDetailScreen';
 import MobileFileListScreen, { ArchiveFile } from './screens/MobileFileListScreen';
 import MobileFilePreviewScreen from './screens/MobileFilePreviewScreen';
 import MobileTrashScreen from './screens/MobileTrashScreen';
-import CalendarView from '../components/CalendarView';
 import { ScheduleDraft } from '../components/calendar/ScheduleFormModal';
+import TodoListView from '../components/TodoListView';
+import MobileCalendarScreen from './screens/MobileCalendarScreen';
 import { useArchiveFiles } from '../archiveStore/features/archive/useArchiveFiles.js';
 import { useArchiveMutations } from '../archiveStore/features/archive/useArchiveMutations.js';
 
@@ -30,6 +31,7 @@ interface MobileAppShellProps {
   onAddSchedule: (draft: ScheduleDraft) => void;
   onUpdateSchedule: (scheduleId: string, draft: ScheduleDraft) => void;
   onDeleteSchedule: (scheduleId: string) => void;
+  onSetChecklistItemStatus: (noteId: string, itemId: string, status: TodoStatus) => void;
   trashedSchedules?: Schedule[];
   onRestoreNote?: (noteId: string) => void;
   onPermanentlyDeleteNote?: (noteId: string) => void;
@@ -51,6 +53,7 @@ export default function MobileAppShell({
   onAddSchedule,
   onUpdateSchedule,
   onDeleteSchedule,
+  onSetChecklistItemStatus,
   trashedSchedules = [],
   onRestoreNote = () => undefined,
   onPermanentlyDeleteNote = () => undefined,
@@ -150,30 +153,23 @@ export default function MobileAppShell({
         ))}
 
       {activeTab === 'CALENDAR' && (
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center h-11 px-4 border-b border-grid-line bg-background shrink-0">
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className="w-9 h-9 shrink-0 rounded-full overflow-hidden border border-outline-variant"
-              aria-label="설정"
-              title="설정"
-            >
-              <img src={profileImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            </button>
-          </div>
-          <div className="flex-1 min-h-0">
-            <CalendarView
-              notes={notes}
-              schedules={schedules}
-              groups={groups}
-              onSelectNote={handleSelectNoteFromCalendar}
-              onAddSchedule={onAddSchedule}
-              onUpdateSchedule={onUpdateSchedule}
-              onDeleteSchedule={onDeleteSchedule}
-            />
-          </div>
-        </div>
+        <MobileCalendarScreen
+          schedules={schedules}
+          profileImage={profileImage}
+          onOpenSettings={onOpenSettings}
+          onAddSchedule={onAddSchedule}
+          onUpdateSchedule={onUpdateSchedule}
+          onDeleteSchedule={onDeleteSchedule}
+        />
+      )}
+
+      {activeTab === 'TODOS' && (
+        <TodoListView
+          notes={notes}
+          groups={groups}
+          onSetItemStatus={onSetChecklistItemStatus}
+          onSelectNote={handleSelectNoteFromCalendar}
+        />
       )}
 
       {activeTab === 'FILES' &&

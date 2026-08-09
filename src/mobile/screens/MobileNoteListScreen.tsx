@@ -89,17 +89,29 @@ export default function MobileNoteListScreen({
         {visibleNotes.length === 0 ? (
           <MobileEmptyState message={query.trim() ? '검색 결과가 없습니다' : '메모가 없습니다'} />
         ) : (
-          <ul className="min-w-0 w-full max-w-full overflow-hidden">
+          <ul className="min-w-0 w-full max-w-full space-y-3 overflow-hidden p-3">
             {visibleNotes.map((note) => (
-              <li key={note.id} className="min-w-0 w-full max-w-full overflow-hidden border-b border-grid-line last:border-b-0">
+              <li key={note.id} className="min-w-0 w-full max-w-full overflow-hidden">
                 <button
                   type="button"
                   onClick={() => onSelectNote(note.id)}
-                  className="flex min-h-[64px] min-w-0 w-full max-w-full flex-col gap-1 overflow-hidden px-4 py-3 text-left transition-colors active:bg-surface-container"
+                  className="flex min-w-0 w-full max-w-full flex-col gap-1.5 overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-left shadow-soft transition-colors active:bg-surface-container"
                 >
+                  <time className="block w-full min-w-0 truncate text-[10px] font-semibold text-outline">
+                    {note.createdAt || note.dateString}
+                  </time>
                   <span className="block w-full min-w-0 truncate text-sm font-bold text-on-surface">{note.title}</span>
-                  <span className="block w-full min-w-0 line-clamp-2 break-words text-xs text-on-surface-variant">{note.content}</span>
-                  <span className="block w-full min-w-0 truncate text-[11px] text-outline">{note.updatedAt}</span>
+                  <span
+                    className="block w-full min-w-0 break-words text-xs leading-5 text-on-surface-variant"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 3,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {note.content}
+                  </span>
                 </button>
               </li>
             ))}

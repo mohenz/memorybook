@@ -918,6 +918,7 @@ export default function App() {
               onAddSchedule={handleAddSchedule}
               onUpdateSchedule={handleUpdateSchedule}
               onDeleteSchedule={handleDeleteSchedule}
+              onSetChecklistItemStatus={handleSetChecklistItemStatus}
               trashedSchedules={trashedSchedules}
               onRestoreNote={handleRestoreNote}
               onPermanentlyDeleteNote={handleDeleteNote}
