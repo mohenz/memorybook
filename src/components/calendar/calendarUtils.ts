@@ -1,7 +1,7 @@
 import { Note } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 
-export type CalendarViewMode = 'month' | 'week' | 'day' | 'year';
+export type CalendarViewMode = 'month' | 'week' | 'day' | 'year' | 'agenda';
 
 export interface CalendarDayCell {
   date: Date;
@@ -71,6 +71,7 @@ export const getYearDates = (selectedDate: Date) => {
 
 export function formatCalendarPeriod(date: Date, mode: CalendarViewMode) {
   if (mode === 'year') return `${date.getFullYear()}년`;
+  if (mode === 'agenda') return `${date.getFullYear()}년 ${date.getMonth() + 1}월 일정`;
   if (mode === 'month') return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
 
   if (mode === 'day') {

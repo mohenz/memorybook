@@ -1,16 +1,21 @@
 import React from 'react';
 import { ArrowLeft, Download, Pencil } from 'lucide-react';
-import { Group, Note } from '../../types';
+import { Group, Note, TodoItem, TodoStatus } from '../../types';
 import { downloadMarkdownFile } from '../../utils/markdownExport';
+import TodoItemCard from '../../components/TodoItemCard';
 
 interface MobileNoteDetailScreenProps {
   note: Note | null;
   groups: Group[];
+  todos: TodoItem[];
+  onUpdateTodo: (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => void;
+  onDeleteTodo: (todoId: string) => void;
+  onSetTodoStatus: (todoId: string, status: TodoStatus) => void;
   onBack: () => void;
   onEdit: () => void;
 }
 
-export default function MobileNoteDetailScreen({ note, groups, onBack, onEdit }: MobileNoteDetailScreenProps) {
+export default function MobileNoteDetailScreen({ note, groups, todos, onUpdateTodo, onDeleteTodo, onSetTodoStatus, onBack, onEdit }: MobileNoteDetailScreenProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <header className="flex items-center justify-between h-14 px-2 border-b border-grid-line bg-background shrink-0">
@@ -73,21 +78,23 @@ export default function MobileNoteDetailScreen({ note, groups, onBack, onEdit }:
             </div>
           )}
 
-          {note.checklist && note.checklist.length > 0 && (
-            <ul className="flex flex-col gap-2 mt-6 border-t border-grid-line pt-4">
-              {note.checklist.map((item) => (
-                <li key={item.id} className="flex items-center gap-2 text-sm">
-                  <span
-                    className={`w-4 h-4 rounded border shrink-0 ${
-                      item.done ? 'bg-primary border-primary' : 'border-outline-variant'
-                    }`}
-                  />
-                  <span className={item.done ? 'line-through text-outline' : 'text-on-surface-variant'}>
-                    {item.text}
-                  </span>
-                </li>
+          {todos.length > 0 && (
+            <section className="mt-6 space-y-3 border-t border-grid-line pt-4">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface">이 날짜의 TO-DO</h3>
+                <p className="mt-1 text-[11px] text-outline">등록일 또는 목표일이 메모 날짜와 같은 항목</p>
+              </div>
+              {todos.map(todo => (
+                <TodoItemCard
+                  key={todo.id}
+                  todo={todo}
+                  accentClass={todo.status === 'done' ? 'border-l-primary' : todo.status === 'in_progress' ? 'border-l-amber-400' : 'border-l-outline-variant'}
+                  onUpdate={onUpdateTodo}
+                  onDelete={onDeleteTodo}
+                  onSetStatus={onSetTodoStatus}
+                />
               ))}
-            </ul>
+            </section>
           )}
         </div>
       )}

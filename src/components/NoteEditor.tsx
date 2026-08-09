@@ -5,15 +5,11 @@ import {
   Save, 
   Image as ImageIcon, 
   MoreVertical, 
-  Plus, 
   X, 
   Upload,
-  PlusCircle, 
-  CheckSquare, 
-  Trash2,
   FolderOpen
 } from 'lucide-react';
-import { Note, Group, ChecklistItem } from '../types';
+import { Note, Group } from '../types';
 import { PREMIUM_IMAGES } from '../data';
 import GroupButtonSelector from './GroupButtonSelector';
 
@@ -38,8 +34,6 @@ export default function NoteEditor({
   const [content, setContent] = useState(note?.content || '');
   const [groupId, setGroupId] = useState(note?.groupId || groups[0]?.id || 'personal');
   const [images, setImages] = useState<string[]>(note?.images || []);
-  const [checklist, setChecklist] = useState<ChecklistItem[]>(note?.checklist || []);
-  const [newTodoText, setNewTodoText] = useState('');
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const initialSnapshotRef = useRef('');
@@ -50,7 +44,6 @@ export default function NoteEditor({
     content: content,
     groupId: groupId,
     images: images,
-    checklist: checklist,
     updatedAt: new Date().toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
@@ -66,8 +59,7 @@ export default function NoteEditor({
     content,
     groupId,
     images,
-    checklist
-  }), [title, content, groupId, images, checklist]);
+  }), [title, content, groupId, images]);
 
   useEffect(() => {
     initialSnapshotRef.current = autoSaveSnapshot;
@@ -78,7 +70,7 @@ export default function NoteEditor({
     if (!onAutoSave) return;
     if (autoSaveSnapshot === initialSnapshotRef.current) return;
     if (autoSaveSnapshot === lastAutoSavedSnapshotRef.current) return;
-    if (!title.trim() && !content.trim() && checklist.length === 0 && images.length === 0) return;
+    if (!title.trim() && !content.trim() && images.length === 0) return;
 
     const timer = window.setTimeout(() => {
       lastAutoSavedSnapshotRef.current = autoSaveSnapshot;
@@ -86,27 +78,10 @@ export default function NoteEditor({
     }, 1200);
 
     return () => window.clearTimeout(timer);
-  }, [autoSaveSnapshot, onAutoSave, title, content, groupId, images, checklist]);
+  }, [autoSaveSnapshot, onAutoSave, title, content, groupId, images]);
 
   const handleSave = () => {
     onSave(buildNotePayload());
-  };
-
-  const handleAddTodo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTodoText.trim()) {
-      const newItem: ChecklistItem = {
-        id: 'todo-' + Date.now(),
-        text: newTodoText.trim(),
-        done: false
-      };
-      setChecklist(currentChecklist => [...currentChecklist, newItem]);
-      setNewTodoText('');
-    }
-  };
-
-  const handleRemoveTodo = (id: string) => {
-    setChecklist(currentChecklist => currentChecklist.filter(item => item.id !== id));
   };
 
   const handleAddImage = (url: string) => {
@@ -250,52 +225,7 @@ export default function NoteEditor({
             onChange={(e) => setContent(e.target.value)}
           />
 
-          {/* Inline Todo Checklist Builder */}
-          <div className="border-t border-grid-line pt-6">
-            <h4 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2 uppercase tracking-wide text-outline">
-              <CheckSquare className="w-4.5 h-4.5 text-primary" />
-              <span>할 일 / 체크리스트 등록</span>
-            </h4>
-            
-            {/* Quick Checklist list */}
-            {checklist.length > 0 && (
-              <div className="flex flex-col gap-2 mb-4 pl-1">
-                {checklist.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between group bg-surface rounded-xl px-3 py-2 border border-outline-variant/30">
-                    <span className="text-sm text-on-surface-variant font-medium">
-                      {item.text}
-                    </span>
-                    <button 
-                      onClick={() => handleRemoveTodo(item.id)}
-                      className="text-outline-variant hover:text-error transition-colors p-1 rounded-lg hover:bg-white"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Checklist Add Input */}
-            <form onSubmit={handleAddTodo} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="새 일정을 입력하고 추가를 누르세요"
-                value={newTodoText}
-                onChange={(e) => setNewTodoText(e.target.value)}
-                className="flex-1 h-10 px-3 border border-outline-variant rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary font-medium"
-              />
-              <button 
-                type="submit"
-                className="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 h-10 rounded-xl transition-all font-semibold text-sm flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>추가</span>
-              </button>
-            </form>
-          </div>
-
-          {/* Attachments stay in the document flow so they never cover checklist controls. */}
+          {/* Attachments stay in the document flow so they never cover editor controls. */}
           <div className="border-t border-grid-line pt-6">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-outline">

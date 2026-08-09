@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CalendarPlus, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import { Group, Note, Schedule } from '../types';
+import { Group, Note, Schedule, TodoItem } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { koreanHolidays } from '../features/holidays/koreanHolidays.generated';
 import { groupKoreanHolidays } from '../features/holidays/koreanHolidayUtils';
@@ -10,6 +10,7 @@ import ScheduleFormModal, { ScheduleDraft } from './calendar/ScheduleFormModal';
 import SelectedDayPanel from './calendar/SelectedDayPanel';
 import WeekCalendarScreen from './calendar/WeekCalendarScreen';
 import YearCalendarScreen from './calendar/YearCalendarScreen';
+import AgendaCalendarScreen from './calendar/AgendaCalendarScreen';
 import {
   CalendarViewMode,
   formatCalendarPeriod,
@@ -31,8 +32,10 @@ type ScheduleModalState =
 interface CalendarViewProps {
   notes: Note[];
   schedules: Schedule[];
+  todos: TodoItem[];
   groups: Group[];
   onSelectNote: (noteId: string) => void;
+  onAddNote: (dateString: string) => void;
   onAddSchedule: (draft: ScheduleDraft) => void;
   onUpdateSchedule: (scheduleId: string, draft: ScheduleDraft) => void;
   onDeleteSchedule: (scheduleId: string) => void;
@@ -43,6 +46,7 @@ const VIEW_OPTIONS: Array<{ value: CalendarViewMode; label: string }> = [
   { value: 'day', label: '일간' },
   { value: 'month', label: '월간' },
   { value: 'year', label: '연간' },
+  { value: 'agenda', label: '일정' },
 ];
 
 const MOVE_LABEL: Record<CalendarViewMode, string> = {
@@ -50,13 +54,16 @@ const MOVE_LABEL: Record<CalendarViewMode, string> = {
   week: '주',
   day: '일',
   year: '년',
+  agenda: '달',
 };
 
 export default function CalendarView({
   notes,
   schedules,
+  todos,
   groups,
   onSelectNote,
+  onAddNote,
   onAddSchedule,
   onUpdateSchedule,
   onDeleteSchedule,
@@ -69,6 +76,7 @@ export default function CalendarView({
   const selectedDateString = toLocalDateString(selectedDate);
   const visibleDateStrings = useMemo(() => {
     if (viewMode === 'year') return getYearDates(selectedDate).map(toLocalDateString);
+    if (viewMode === 'agenda') return getMonthCells(selectedDate).filter(cell => cell.isCurrentMonth).map(cell => cell.dateString);
     if (viewMode === 'month') return getMonthCells(selectedDate).map((cell) => cell.dateString);
     if (viewMode === 'week') return getWeekDates(selectedDate).map(toLocalDateString);
     return [selectedDateString];
@@ -177,7 +185,15 @@ export default function CalendarView({
       </header>
 
       <div className="flex-1 min-h-0 overflow-hidden">
-        {viewMode === 'year' ? (
+        {viewMode === 'agenda' ? (
+          <AgendaCalendarScreen
+            selectedDate={selectedDate}
+            schedulesByDate={schedulesByDate}
+            todos={todos}
+            searchQuery={searchQuery}
+            onSelectSchedule={(schedule) => setScheduleModal({ mode: 'edit', schedule })}
+          />
+        ) : viewMode === 'year' ? (
           <YearCalendarScreen
             selectedDate={selectedDate}
             schedulesByDate={schedulesByDate}
@@ -225,6 +241,8 @@ export default function CalendarView({
               groups={groups}
               onSelectNote={onSelectNote}
               onSelectSchedule={(schedule) => setScheduleModal({ mode: 'edit', schedule })}
+              onAddSchedule={() => setScheduleModal({ mode: 'create', dateString: selectedDateString, startTime: '09:00' })}
+              onAddNote={() => onAddNote(selectedDateString)}
             />
           </div>
         )}

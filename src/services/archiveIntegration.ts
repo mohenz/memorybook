@@ -1,4 +1,4 @@
-import { Group, Note, NotificationSettings, Schedule } from '../types';
+import { Group, Note, NotificationSettings, Schedule, TodoItem } from '../types';
 import { isSupabaseConfigured, supabase } from '../supabase/client';
 
 const STORAGE_BUCKET = 'memorybook-files';
@@ -10,6 +10,7 @@ export interface MemoCloudState {
   groups: Group[];
   notes: Note[];
   schedules: Schedule[];
+  todos: TodoItem[];
   notificationSettings?: NotificationSettings;
   profileImage: string;
 }

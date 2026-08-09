@@ -13,6 +13,16 @@ export interface ChecklistItem {
   status?: TodoStatus; // 예정/진행/완료; falls back to (done ? 'done' : 'todo') when absent
 }
 
+export interface TodoItem {
+  id: string;
+  text: string;
+  status: TodoStatus;
+  createdDateString: string;
+  targetDateString?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Note {
   id: string;
   title: string;

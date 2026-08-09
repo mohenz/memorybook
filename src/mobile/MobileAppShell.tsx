@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Group, Note, Schedule, TodoStatus } from '../types';
+import { Group, Note, Schedule, TodoItem, TodoStatus } from '../types';
 import MobileBottomNav, { MobileTab } from './MobileBottomNav';
 import MobileNoteListScreen from './screens/MobileNoteListScreen';
 import MobileNoteDetailScreen from './screens/MobileNoteDetailScreen';
@@ -11,6 +11,7 @@ import TodoListView from '../components/TodoListView';
 import MobileCalendarScreen from './screens/MobileCalendarScreen';
 import { useArchiveFiles } from '../archiveStore/features/archive/useArchiveFiles.js';
 import { useArchiveMutations } from '../archiveStore/features/archive/useArchiveMutations.js';
+import { getTodosForDate } from '../utils/todos';
 
 type NoteView = 'LIST' | 'DETAIL';
 type FileView = 'LIST' | 'PREVIEW';
@@ -25,6 +26,7 @@ interface MobileAppShellProps {
   notes: Note[];
   groups: Group[];
   schedules: Schedule[];
+  todos: TodoItem[];
   selectedNote: Note | null;
   onSelectNote: (id: string) => void;
   onAddNote: () => void;
@@ -32,7 +34,10 @@ interface MobileAppShellProps {
   onAddSchedule: (draft: ScheduleDraft) => void;
   onUpdateSchedule: (scheduleId: string, draft: ScheduleDraft) => void;
   onDeleteSchedule: (scheduleId: string) => void;
-  onSetChecklistItemStatus: (noteId: string, itemId: string, status: TodoStatus) => void;
+  onAddTodo: (text: string, targetDateString: string) => void;
+  onUpdateTodo: (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => void;
+  onDeleteTodo: (todoId: string) => void;
+  onSetTodoStatus: (todoId: string, status: TodoStatus) => void;
   trashedSchedules?: Schedule[];
   onRestoreNote?: (noteId: string) => void;
   onPermanentlyDeleteNote?: (noteId: string) => void;
@@ -48,6 +53,7 @@ export default function MobileAppShell({
   notes,
   groups,
   schedules,
+  todos,
   selectedNote,
   onSelectNote,
   onAddNote,
@@ -55,7 +61,10 @@ export default function MobileAppShell({
   onAddSchedule,
   onUpdateSchedule,
   onDeleteSchedule,
-  onSetChecklistItemStatus,
+  onAddTodo,
+  onUpdateTodo,
+  onDeleteTodo,
+  onSetTodoStatus,
   trashedSchedules = [],
   onRestoreNote = () => undefined,
   onPermanentlyDeleteNote = () => undefined,
@@ -111,12 +120,6 @@ export default function MobileAppShell({
     setNoteView('DETAIL');
   };
 
-  const handleSelectNoteFromCalendar = (id: string) => {
-    onSelectNote(id);
-    setActiveTab('NOTES');
-    setNoteView('DETAIL');
-  };
-
   const handleUploadFile = (file: File) => {
     setUploadingFile(file);
     setUploadFailed(false);
@@ -149,6 +152,10 @@ export default function MobileAppShell({
           <MobileNoteDetailScreen
             note={selectedNote}
             groups={groups}
+            todos={selectedNote ? getTodosForDate(todos, selectedNote.dateString) : []}
+            onUpdateTodo={onUpdateTodo}
+            onDeleteTodo={onDeleteTodo}
+            onSetTodoStatus={onSetTodoStatus}
             onBack={() => setNoteView('LIST')}
             onEdit={() => selectedNote && onEditNote(selectedNote)}
           />
@@ -168,10 +175,11 @@ export default function MobileAppShell({
       {activeTab === 'TODOS' && (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <TodoListView
-            notes={notes}
-            groups={groups}
-            onSetItemStatus={onSetChecklistItemStatus}
-            onSelectNote={handleSelectNoteFromCalendar}
+            todos={todos}
+            onAddItem={onAddTodo}
+            onUpdateItem={onUpdateTodo}
+            onDeleteItem={onDeleteTodo}
+            onSetItemStatus={onSetTodoStatus}
           />
         </div>
       )}

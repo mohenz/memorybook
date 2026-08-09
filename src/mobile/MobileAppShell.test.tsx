@@ -4,7 +4,13 @@ import MobileAppShell from './MobileAppShell';
 import MobileNoteListScreen from './screens/MobileNoteListScreen';
 import MobileNoteDetailScreen from './screens/MobileNoteDetailScreen';
 import MobileCalendarScreen from './screens/MobileCalendarScreen';
-import { Note, Schedule } from '../types';
+import { Note, Schedule, TodoItem } from '../types';
+
+const todoCallbacks = {
+  onUpdateTodo: () => undefined,
+  onDeleteTodo: () => undefined,
+  onSetTodoStatus: () => undefined,
+};
 
 const buildNote = (overrides: Partial<Note> = {}): Note => ({
   id: 'note-1',
@@ -78,7 +84,7 @@ describe('MobileNoteListScreen', () => {
 describe('MobileNoteDetailScreen', () => {
   it('renders the note title, timestamp and content', () => {
     const markup = renderToStaticMarkup(
-      <MobileNoteDetailScreen note={buildNote()} groups={[]} onBack={() => undefined} onEdit={() => undefined} />
+      <MobileNoteDetailScreen note={buildNote()} groups={[]} todos={[]} {...todoCallbacks} onBack={() => undefined} onEdit={() => undefined} />
     );
 
     expect(markup).toContain('회의 아이디어');
@@ -88,18 +94,19 @@ describe('MobileNoteDetailScreen', () => {
 
   it('shows a fallback message when no note is selected', () => {
     const markup = renderToStaticMarkup(
-      <MobileNoteDetailScreen note={null} groups={[]} onBack={() => undefined} onEdit={() => undefined} />
+      <MobileNoteDetailScreen note={null} groups={[]} todos={[]} {...todoCallbacks} onBack={() => undefined} onEdit={() => undefined} />
     );
 
     expect(markup).toContain('메모를 선택해 주세요');
   });
 
-  it('renders the checklist read-only, without a toggle handler', () => {
-    const note = buildNote({
-      checklist: [{ id: 'todo-1', text: '장보기', done: true }],
-    });
+  it('renders date-linked todos with management controls', () => {
+    const todo: TodoItem = {
+      id: 'todo-1', text: '장보기', status: 'todo', createdDateString: '2026-07-25',
+      targetDateString: '2026-07-26', createdAt: '2026-07-25T00:00:00.000Z', updatedAt: '2026-07-25T00:00:00.000Z',
+    };
     const markup = renderToStaticMarkup(
-      <MobileNoteDetailScreen note={note} groups={[]} onBack={() => undefined} onEdit={() => undefined} />
+      <MobileNoteDetailScreen note={buildNote()} groups={[]} todos={[todo]} {...todoCallbacks} onBack={() => undefined} onEdit={() => undefined} />
     );
 
     expect(markup).toContain('장보기');
@@ -113,6 +120,7 @@ describe('MobileAppShell', () => {
         notes={[buildNote()]}
         groups={[]}
         schedules={[]}
+        todos={[]}
         selectedNote={null}
         onSelectNote={() => undefined}
         onAddNote={() => undefined}
@@ -120,7 +128,8 @@ describe('MobileAppShell', () => {
         onAddSchedule={() => undefined}
         onUpdateSchedule={() => undefined}
         onDeleteSchedule={() => undefined}
-        onSetChecklistItemStatus={() => undefined}
+        onAddTodo={() => undefined}
+        {...todoCallbacks}
         userId="test-user"
         profileImage="https://example.com/avatar.png"
         onOpenSettings={() => undefined}
@@ -141,9 +150,13 @@ describe('MobileAppShell', () => {
     const markup = renderToStaticMarkup(
       <MobileAppShell
         initialTab="TODOS"
-        notes={[buildNote({ checklist: [{ id: 'todo-1', text: '할 일', done: false }] })]}
+        notes={[buildNote()]}
         groups={[]}
         schedules={[]}
+        todos={[{
+          id: 'todo-1', text: '할 일', status: 'todo', createdDateString: '2026-07-25',
+          targetDateString: '2026-07-26', createdAt: '2026-07-25T00:00:00.000Z', updatedAt: '2026-07-25T00:00:00.000Z',
+        }]}
         selectedNote={null}
         onSelectNote={() => undefined}
         onAddNote={() => undefined}
@@ -151,7 +164,8 @@ describe('MobileAppShell', () => {
         onAddSchedule={() => undefined}
         onUpdateSchedule={() => undefined}
         onDeleteSchedule={() => undefined}
-        onSetChecklistItemStatus={() => undefined}
+        onAddTodo={() => undefined}
+        {...todoCallbacks}
         userId="test-user"
         profileImage="https://example.com/avatar.png"
         onOpenSettings={() => undefined}

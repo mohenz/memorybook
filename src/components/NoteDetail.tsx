@@ -3,44 +3,40 @@ import {
   Edit, 
   Trash2, 
   Star, 
-  CheckCircle, 
-  Type, 
-  Image as ImageIcon, 
-  Paintbrush, 
-  Mic, 
-  Share2, 
+  CheckCircle,
   MoreVertical,
   FolderOpen,
   X,
-  Download,
   RotateCcw,
 } from 'lucide-react';
-import { Note, Group, TodoStatus } from '../types';
-import { downloadMarkdownFile } from '../utils/markdownExport';
-import { getItemStatus } from '../utils/todoStatus';
-import TodoStatusControl from './TodoStatusControl';
+import { Note, Group, TodoItem, TodoStatus } from '../types';
+import TodoItemCard from './TodoItemCard';
 
 interface NoteDetailProps {
   note: Note | null;
   groups: Group[];
+  todos: TodoItem[];
   onEdit: () => void;
   onDelete: (id: string) => void;
   onRestore: (id: string) => void;
   onToggleFavorite: (id: string) => void;
-  onSetChecklistItemStatus: (noteId: string, itemId: string, status: TodoStatus) => void;
+  onUpdateTodo: (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => void;
+  onDeleteTodo: (todoId: string) => void;
+  onSetTodoStatus: (todoId: string, status: TodoStatus) => void;
 }
 
 export default function NoteDetail({
   note,
   groups,
+  todos,
   onEdit,
   onDelete,
   onRestore,
   onToggleFavorite,
-  onSetChecklistItemStatus
+  onUpdateTodo,
+  onDeleteTodo,
+  onSetTodoStatus,
 }: NoteDetailProps) {
-  const [showShareToast, setShowShareToast] = useState(false);
-  const [showFormatToast, setShowFormatToast] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
 
   if (!note) {
@@ -58,26 +54,6 @@ export default function NoteDetail({
   }
 
   const groupName = groups.find(g => g.id === note.groupId)?.name || '개인';
-
-  const handleShare = () => {
-    // Mimic share behavior
-    const shareUrl = `${window.location.origin}/notes/${note.id}`;
-    navigator.clipboard?.writeText(shareUrl);
-    setShowShareToast(true);
-    setTimeout(() => setShowShareToast(false), 2000);
-  };
-
-  const handleMarkdownDownload = () => {
-    downloadMarkdownFile(note, groups);
-  };
-
-  const handleDrawing = () => {
-    alert("그리기 모드: S-Pen 그리기 도구가 연결되었습니다. (데모 시뮬레이션: 격자 무늬 배경 위에서 필기가 활성화됩니다.)");
-  };
-
-  const handleVoice = () => {
-    alert("음성 녹음: 메모에 첨부할 보이스 레코딩 세션이 시작되었습니다.");
-  };
 
   return (
     <section className="flex-1 flex flex-col relative overflow-hidden bg-background">
@@ -137,21 +113,21 @@ export default function NoteDetail({
           {/* Metadata & Title Block */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase">
                 {groupName}
               </span>
-              <span className="text-outline text-xs font-medium">
+              <span className="text-outline text-[10px] font-medium">
                 최종 수정: {note.updatedAt}
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-on-background leading-snug">
+            <h2 className="text-[22px] md:text-[28px] font-extrabold text-on-background leading-snug">
               {note.title}
             </h2>
           </div>
 
           {/* Body Content */}
           <div className="prose prose-slate max-w-none">
-            <p className="text-lg leading-8 text-on-surface-variant font-medium whitespace-pre-wrap">
+            <p className="text-base leading-8 text-on-surface-variant font-medium whitespace-pre-wrap">
               {note.content}
             </p>
 
@@ -186,111 +162,29 @@ export default function NoteDetail({
             )}
 
             {/* Checklist Section */}
-            {note.checklist && note.checklist.length > 0 && (
+            {todos.length > 0 && (
               <div className="space-y-4 my-6">
-                <h4 className="font-bold text-lg text-on-surface flex items-center gap-2">
+                <h4 className="font-bold text-base text-on-surface flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-primary" />
-                  <span>TO-DO LIST</span>
+                  <span>이 날짜의 TO-DO</span>
                 </h4>
-                <ul className="space-y-2 pl-1 border-l-4 border-primary/20">
-                  {note.checklist.map((item) => {
-                    const status = getItemStatus(item);
-                    return (
-                      <li
-                        key={item.id}
-                        className="flex flex-wrap items-center justify-between gap-2 pl-4 py-1"
-                      >
-                        <span className={`text-base font-medium transition-all ${
-                          status === 'done'
-                            ? 'line-through text-outline font-normal opacity-60'
-                            : 'text-on-surface-variant'
-                        }`}>
-                          {item.text}
-                        </span>
-                        <TodoStatusControl
-                          status={status}
-                          onChange={(next) => onSetChecklistItemStatus(note.id, item.id, next)}
-                          size="sm"
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
+                <p className="text-xs text-outline">메모 작성일과 TO-DO 등록일 또는 목표일이 같은 항목입니다.</p>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  {todos.map(todo => (
+                    <TodoItemCard
+                      key={todo.id}
+                      todo={todo}
+                      accentClass={todo.status === 'done' ? 'border-l-primary' : todo.status === 'in_progress' ? 'border-l-amber-400' : 'border-l-outline-variant'}
+                      onUpdate={onUpdateTodo}
+                      onDelete={onDeleteTodo}
+                      onSetStatus={onSetTodoStatus}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Toolbar Bar (own layout row, never overlaps the scroll area) */}
-      <div className="relative shrink-0 flex justify-center px-4 py-3 md:py-4 bg-background/80 backdrop-blur-sm border-t border-outline-variant/50" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        {showShareToast && (
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-primary text-white text-xs px-4 py-2 rounded-full shadow-lg font-semibold animate-fade-in-scale z-30 whitespace-nowrap">
-            공유 링크가 클립보드에 복사되었습니다.
-          </div>
-        )}
-
-        {showFormatToast && (
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-lg font-semibold animate-fade-in-scale z-30 whitespace-nowrap">
-            서식 도구: Manrope 폰트가 적용되었습니다.
-          </div>
-        )}
-
-        <div className="bg-slate-950/95 text-slate-50 border border-white/10 px-4 md:px-6 py-3 rounded-xl flex items-center gap-4 md:gap-6 shadow-2xl backdrop-blur-md z-20">
-          {!note.isDeleted && <button
-            onClick={() => {
-              setShowFormatToast(true);
-              setTimeout(() => setShowFormatToast(false), 2000);
-            }}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-          >
-            <Type className="w-5 h-5" />
-            <span className="text-[10px] font-bold">서식</span>
-          </button>}
-
-          {!note.isDeleted && <button
-            onClick={onEdit}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-          >
-            <ImageIcon className="w-5 h-5" />
-            <span className="text-[10px] font-bold">사진</span>
-          </button>}
-
-          <button
-            onClick={handleDrawing}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-          >
-            <Paintbrush className="w-5 h-5" />
-            <span className="text-[10px] font-bold">그리기</span>
-          </button>
-
-          <button
-            onClick={handleVoice}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-          >
-            <Mic className="w-5 h-5" />
-            <span className="text-[10px] font-bold">음성</span>
-          </button>
-
-          <div className="w-[1px] h-6 bg-white/20" />
-
-          <button
-            onClick={handleMarkdownDownload}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-            title="Markdown 다운로드"
-          >
-            <Download className="w-5 h-5" />
-            <span className="text-[10px] font-bold">다운로드</span>
-          </button>
-
-          <button
-            onClick={handleShare}
-            className="flex flex-col items-center gap-1 text-slate-50 hover:text-primary-fixed-dim transition-colors cursor-pointer"
-          >
-            <Share2 className="w-5 h-5" />
-            <span className="text-[10px] font-bold">공유</span>
-          </button>
         </div>
       </div>
 

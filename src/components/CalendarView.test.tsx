@@ -9,8 +9,10 @@ const renderCalendar = (date: Date, schedules: Schedule[] = [], notes: Note[] = 
     <CalendarView
       notes={notes}
       schedules={schedules}
+      todos={[]}
       groups={[]}
       onSelectNote={() => undefined}
+      onAddNote={() => undefined}
       onAddSchedule={() => undefined}
       onUpdateSchedule={() => undefined}
       onDeleteSchedule={() => undefined}
@@ -46,7 +48,7 @@ describe('CalendarView current date', () => {
 });
 
 describe('CalendarView selected-day panel', () => {
-  it('shows the selected date schedules and notes without memo creation controls', () => {
+  it('shows selected-date creation controls with the schedules and notes', () => {
     vi.useFakeTimers();
     const markup = renderCalendar(new Date(2026, 6, 23, 12), [], [{
       id: 'note-1',
@@ -65,7 +67,8 @@ describe('CalendarView selected-day panel', () => {
     expect(markup).toContain('>일정<');
     expect(markup).toContain('>메모<');
     expect(markup).toContain('인터뷰 회의록');
-    expect(markup).not.toContain('새 메모');
+    expect(markup).toContain('일정 추가');
+    expect(markup).toContain('메모 추가');
     expect(markup).not.toContain('캘린더 메모 검색');
 
     vi.useRealTimers();
@@ -149,9 +152,11 @@ describe('CalendarView toolbar layout', () => {
     expect(markup).toContain('<option value="day">일간</option>');
     expect(markup).toContain('<option value="month" selected="">월간</option>');
     expect(markup).toContain('<option value="year">연간</option>');
+    expect(markup).toContain('<option value="agenda">일정</option>');
     expect(markup.indexOf('value="week"')).toBeLessThan(markup.indexOf('value="day"'));
     expect(markup.indexOf('value="day"')).toBeLessThan(markup.indexOf('value="month"'));
     expect(markup.indexOf('value="month"')).toBeLessThan(markup.indexOf('value="year"'));
+    expect(markup.indexOf('value="year"')).toBeLessThan(markup.indexOf('value="agenda"'));
 
     vi.useRealTimers();
   });

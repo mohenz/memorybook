@@ -9,8 +9,8 @@ function formatDate(value: string) {
 }
 
 export default function PopupCardView({ data }: { data: PopupScheduleData }) {
-  const cards: Array<{ label: string; date?: string; schedules: PopupScheduleOccurrence[] }> = [
-    { label: '리마인드 일정', schedules: data.reminders },
+  const cards: Array<{ label: string; date?: string; showItemDate?: boolean; schedules: PopupScheduleOccurrence[] }> = [
+    { label: '리마인드 일정', schedules: data.reminders, showItemDate: true },
     { label: '오늘', date: data.dates[0], schedules: data.today },
     { label: '내일', date: data.dates[1], schedules: data.tomorrow },
     { label: '모레', date: data.dates[2], schedules: data.dayAfter },
@@ -45,7 +45,13 @@ export default function PopupCardView({ data }: { data: PopupScheduleData }) {
               <ul className="min-h-40 space-y-2">
                 {card.schedules.map((schedule) => (
                   <li key={`${schedule.id}-${schedule.occurrenceDateString}`} className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-lowest p-3 shadow-xs">
-                    <div className="min-w-0"><strong className="block truncate text-sm text-on-surface">{schedule.title}</strong><span className="text-xs text-on-surface-variant">{schedule.allDay ? '종일' : `${schedule.startTime || ''}${schedule.endTime ? ` – ${schedule.endTime}` : ''}`}</span></div>
+                    <div className="min-w-0">
+                      <strong className="block truncate text-sm text-on-surface">{schedule.title}</strong>
+                      <span className="text-xs text-on-surface-variant">
+                        {card.showItemDate ? `${formatDate(schedule.occurrenceDateString)} · ` : ''}
+                        {schedule.allDay ? '종일' : `${schedule.startTime || ''}${schedule.endTime ? ` – ${schedule.endTime}` : ''}`}
+                      </span>
+                    </div>
                     <SchedulePriorityBadge priority={schedule.priority} />
                   </li>
                 ))}

@@ -1,3 +1,4 @@
+import { CalendarPlus, FilePlus2 } from 'lucide-react';
 import { Group, Note, Schedule } from '../../types';
 import HolidayBadges from '../../features/holidays/HolidayBadges';
 import { KoreanHoliday } from '../../features/holidays/koreanHolidayTypes';
@@ -12,6 +13,8 @@ interface SelectedDayPanelProps {
   groups: Group[];
   onSelectNote: (noteId: string) => void;
   onSelectSchedule: (schedule: Schedule) => void;
+  onAddSchedule: () => void;
+  onAddNote: () => void;
 }
 
 export default function SelectedDayPanel({
@@ -22,14 +25,34 @@ export default function SelectedDayPanel({
   groups,
   onSelectNote,
   onSelectSchedule,
+  onAddSchedule,
+  onAddNote,
 }: SelectedDayPanelProps) {
   const dateLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일`;
 
   return (
     <aside className="w-full xl:w-[360px] max-h-[42vh] xl:max-h-none border-t xl:border-t-0 xl:border-l border-grid-line bg-surface-container-low flex flex-col shrink-0">
       <div className="p-5 md:p-6 flex flex-col h-full gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="font-sans text-lg font-bold text-on-surface">{dateLabel}</h2>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={onAddSchedule}
+              className="flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-bold text-white shadow-soft transition-all hover:brightness-110 active:scale-95 cursor-pointer"
+            >
+              <CalendarPlus className="h-3.5 w-3.5" />
+              일정 추가
+            </button>
+            <button
+              type="button"
+              onClick={onAddNote}
+              className="flex h-8 items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 text-[11px] font-bold text-on-surface transition-all hover:border-primary hover:text-primary active:scale-95 cursor-pointer"
+            >
+              <FilePlus2 className="h-3.5 w-3.5" />
+              메모 추가
+            </button>
+          </div>
         </div>
         <HolidayBadges holidays={holidays} />
 

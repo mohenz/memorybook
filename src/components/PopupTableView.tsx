@@ -1,7 +1,12 @@
 import { PopupScheduleData, PopupScheduleOccurrence } from '../utils/scheduleFilter';
 import SchedulePriorityBadge from './SchedulePriorityBadge';
 
-function ScheduleList({ schedules }: { schedules: PopupScheduleOccurrence[] }) {
+function formatOccurrenceDate(value: string) {
+  return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+    .format(new Date(`${value}T12:00:00`));
+}
+
+function ScheduleList({ schedules, showDate = false }: { schedules: PopupScheduleOccurrence[]; showDate?: boolean }) {
   if (!schedules.length) return <p className="py-5 text-center text-xs text-outline">일정 없음</p>;
   return (
     <ul className="space-y-2">
@@ -11,7 +16,10 @@ function ScheduleList({ schedules }: { schedules: PopupScheduleOccurrence[] }) {
             <strong className="text-xs text-on-surface">{schedule.title}</strong>
             <SchedulePriorityBadge priority={schedule.priority} />
           </div>
-          <p className="mt-1 text-[11px] text-on-surface-variant">{schedule.allDay ? '종일' : `${schedule.startTime || ''}${schedule.endTime ? ` – ${schedule.endTime}` : ''}`}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] text-on-surface-variant">
+            {showDate && <span className="font-bold text-primary">{formatOccurrenceDate(schedule.occurrenceDateString)}</span>}
+            <span>{schedule.allDay ? '종일' : `${schedule.startTime || ''}${schedule.endTime ? ` – ${schedule.endTime}` : ''}`}</span>
+          </p>
         </li>
       ))}
     </ul>
@@ -25,7 +33,7 @@ function formatShortDate(value: string) {
 
 export default function PopupTableView({ data }: { data: PopupScheduleData }) {
   const columns = [
-    { label: '리마인드 일정', schedules: data.reminders },
+    { label: '리마인드 일정', schedules: data.reminders, showDate: true },
     { label: `오늘 (${formatShortDate(data.dates[0])})`, schedules: data.today },
     { label: `내일 (${formatShortDate(data.dates[1])})`, schedules: data.tomorrow },
     { label: `모레 (${formatShortDate(data.dates[2])})`, schedules: data.dayAfter },
@@ -36,7 +44,7 @@ export default function PopupTableView({ data }: { data: PopupScheduleData }) {
         {columns.map((column) => (
           <section key={column.label} className="min-w-0">
             <h3 className="border-b border-outline-variant/50 bg-surface-container-high px-3 py-2.5 text-center text-xs font-extrabold text-on-surface">{column.label}</h3>
-            <div className="p-2"><ScheduleList schedules={column.schedules} /></div>
+            <div className="p-2"><ScheduleList schedules={column.schedules} showDate={column.showDate} /></div>
           </section>
         ))}
       </div>

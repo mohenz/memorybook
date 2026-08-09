@@ -1,0 +1,97 @@
+import { CalendarDays, CheckSquare2 } from 'lucide-react';
+import { Schedule, TodoItem } from '../../types';
+import { toLocalDateString } from '../../utils/date';
+import { TODO_STATUS_LABELS } from '../../utils/todoStatus';
+
+interface AgendaCalendarScreenProps {
+  selectedDate: Date;
+  schedulesByDate: Map<string, Schedule[]>;
+  todos: TodoItem[];
+  searchQuery: string;
+  onSelectSchedule: (schedule: Schedule) => void;
+}
+
+const NEUTRAL_BADGE_CLASS = 'bg-surface-container-high text-on-surface-variant';
+
+function monthDateStrings(selectedDate: Date) {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  const dayCount = new Date(year, month + 1, 0).getDate();
+  return Array.from({ length: dayCount }, (_, index) => toLocalDateString(new Date(year, month, index + 1)));
+}
+
+function formatDateHeading(dateString: string) {
+  return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
+    .format(new Date(`${dateString}T12:00:00`));
+}
+
+export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, todos, searchQuery, onSelectSchedule }: AgendaCalendarScreenProps) {
+  const query = searchQuery.trim().toLocaleLowerCase('ko-KR');
+  const filteredTodos = todos.filter(todo => !query || todo.text.toLocaleLowerCase('ko-KR').includes(query));
+  const days = monthDateStrings(selectedDate).map(dateString => ({
+    dateString,
+    schedules: schedulesByDate.get(dateString) || [],
+    todos: filteredTodos.filter(todo => todo.createdDateString === dateString || todo.targetDateString === dateString),
+  })).filter(day => day.schedules.length || day.todos.length);
+
+  if (!days.length) {
+    return (
+      <div className="flex h-full items-center justify-center p-8 text-center">
+        <div>
+          <CalendarDays className="mx-auto h-10 w-10 text-outline-variant" />
+          <p className="mt-3 text-sm font-bold text-on-surface-variant">이 달에 등록된 일정과 할 일이 없습니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto custom-scrollbar px-4 py-5 md:px-8">
+      <div className="mx-auto max-w-5xl space-y-4">
+        {days.map(day => (
+          <section key={day.dateString} className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-soft">
+            <header className="flex items-center justify-between border-b border-grid-line bg-surface-container-low px-4 py-3">
+              <h2 className="text-sm font-extrabold text-on-surface">{formatDateHeading(day.dateString)}</h2>
+              <span className="text-[10px] font-bold text-outline">일정 {day.schedules.length} · 할 일 {day.todos.length}</span>
+            </header>
+
+            <div className="divide-y divide-grid-line/70">
+              {day.schedules.map(schedule => (
+                <button
+                  key={`${schedule.id}-${day.dateString}`}
+                  type="button"
+                  onClick={() => onSelectSchedule(schedule)}
+                  className="grid w-full grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-container-low cursor-pointer"
+                >
+                  <span className="text-[11px] font-bold tabular-nums text-on-surface-variant">{day.dateString}</span>
+                  <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${schedule.allDay ? 'bg-primary/10 text-primary' : NEUTRAL_BADGE_CLASS}`}>
+                    종일
+                  </span>
+                  <span className="min-w-0 truncate text-sm font-semibold text-on-surface">
+                    {schedule.title}
+                    {!schedule.allDay && <span className="ml-2 text-[11px] font-medium text-outline">{schedule.startTime}–{schedule.endTime}</span>}
+                  </span>
+                </button>
+              ))}
+
+              {day.todos.map(todo => {
+                const relation = todo.createdDateString === day.dateString && todo.targetDateString === day.dateString
+                  ? '등록·목표일'
+                  : todo.targetDateString === day.dateString ? '목표일' : '등록일';
+                return (
+                  <div key={`${todo.id}-${day.dateString}`} className="grid grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-outline"><CheckSquare2 className="h-3.5 w-3.5" />{relation}</span>
+                    <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${todo.status === 'done' ? NEUTRAL_BADGE_CLASS : 'bg-surface-container-high text-primary'}`}>
+                      {TODO_STATUS_LABELS[todo.status]}
+                    </span>
+                    <span className={`min-w-0 truncate text-sm font-semibold ${todo.status === 'done' ? 'line-through text-outline' : 'text-on-surface'}`}>{todo.text}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}

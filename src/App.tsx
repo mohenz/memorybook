@@ -23,7 +23,7 @@ import {
   Trash2,
   Check,
 } from 'lucide-react';
-import { Note, Group, Schedule, ScreenType, NotificationSettings, TodoStatus } from './types';
+import { Note, Group, Schedule, ScreenType, NotificationSettings, TodoItem, TodoStatus } from './types';
 import { ScheduleDraft } from './components/calendar/ScheduleFormModal';
 import { PREMIUM_IMAGES } from './data';
 import SplashView from './components/SplashView';
@@ -54,6 +54,7 @@ import { resolveNoteTitle } from './utils/autoTitle';
 import { toLocalDateString } from './utils/date';
 import { useSchedulePopup } from './hooks/useSchedulePopup';
 import { useNotification } from './hooks/useNotification';
+import { getTodosForDate, migrateLegacyChecklistItems } from './utils/todos';
 import {
   getActiveSchedules,
   getTrashedSchedules,
@@ -136,6 +137,7 @@ export default function App() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const activeSchedules = useMemo(() => getActiveSchedules(schedules), [schedules]);
   const trashedSchedules = useMemo(() => getTrashedSchedules(schedules), [schedules]);
@@ -165,14 +167,19 @@ export default function App() {
 
       try {
         const cloudState = await loadMemoCloudState(user.uid);
-        const nextNotes = Array.isArray(cloudState?.notes)
+        const loadedNotes = Array.isArray(cloudState?.notes)
           ? cloudState.notes.filter((note) => !LEGACY_SAMPLE_NOTE_IDS.has(note.id))
           : [];
         const nextGroups = Array.isArray(cloudState?.groups)
           ? cloudState.groups.filter((group) => !LEGACY_SAMPLE_GROUP_IDS.has(group.id))
           : [];
         const nextSchedules = Array.isArray(cloudState?.schedules) ? cloudState.schedules : [];
-        setNotes(nextNotes);
+        const migratedTodoState = migrateLegacyChecklistItems(
+          loadedNotes,
+          Array.isArray(cloudState?.todos) ? cloudState.todos : [],
+        );
+        setNotes(migratedTodoState.notes);
+        setTodos(migratedTodoState.todos);
         setGroups(nextGroups);
         setSchedules(nextSchedules);
         setNotificationSettings(cloudState?.notificationSettings || DEFAULT_NOTIFICATION_SETTINGS);
@@ -193,7 +200,7 @@ export default function App() {
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
 
     saveTimerRef.current = window.setTimeout(() => {
-      saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, profileImage, notificationSettings })
+      saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, todos, profileImage, notificationSettings })
         .then(() => setArchiveStatus('자료실 백엔드에 저장되었습니다.'))
         .catch((error) => setArchiveStatus(error instanceof Error ? error.message : '자료실 저장에 실패했습니다.'));
     }, 500);
@@ -201,7 +208,7 @@ export default function App() {
     return () => {
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     };
-  }, [archiveUser, cloudReady, darkMode, groups, notes, schedules, profileImage, notificationSettings]);
+  }, [archiveUser, cloudReady, darkMode, groups, notes, schedules, todos, profileImage, notificationSettings]);
 
   // --- Computed Note Filters for Middle Pane ---
   const filteredDashboardNotes = useMemo(() => {
@@ -296,18 +303,39 @@ export default function App() {
     ));
   };
 
-  const handleSetChecklistItemStatus = (noteId: string, itemId: string, status: TodoStatus) => {
-    setNotes(prev => prev.map(note => {
-      if (note.id === noteId) {
-        return {
-          ...note,
-          checklist: note.checklist.map(item =>
-            item.id === itemId ? { ...item, status, done: status === 'done' } : item
-          )
-        };
-      }
-      return note;
-    }));
+  const handleSetTodoStatus = (todoId: string, status: TodoStatus) => {
+    const updatedAt = new Date().toISOString();
+    setTodos(prev => prev.map(todo => todo.id === todoId ? { ...todo, status, updatedAt } : todo));
+  };
+
+  const handleAddTodo = (text: string, targetDateString: string) => {
+    const trimmedText = text.trim();
+    if (!trimmedText) return;
+    const now = new Date().toISOString();
+    setTodos(prev => [{
+      id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text: trimmedText,
+      status: 'todo',
+      createdDateString: toLocalDateString(),
+      targetDateString,
+      createdAt: now,
+      updatedAt: now,
+    }, ...prev]);
+  };
+
+  const handleUpdateTodo = (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => {
+    const text = fields.text.trim();
+    if (!text) return;
+    setTodos(prev => prev.map(todo => todo.id === todoId ? {
+      ...todo,
+      text,
+      targetDateString: fields.targetDateString,
+      updatedAt: new Date().toISOString(),
+    } : todo));
+  };
+
+  const handleDeleteTodo = (todoId: string) => {
+    setTodos(prev => prev.filter(todo => todo.id !== todoId));
   };
 
   const handleDeleteNote = (noteId: string) => {
@@ -646,7 +674,9 @@ export default function App() {
         <CalendarView
           notes={notes}
           schedules={activeSchedules}
+          todos={todos}
           groups={groups}
+          onAddNote={handleStartAddNote}
           onSelectNote={(id) => {
             setSelectedNoteId(id);
             setScreen('DASHBOARD');
@@ -665,13 +695,11 @@ export default function App() {
 
       {screen === 'TODOS' && (
         <TodoListView
-          notes={notes}
-          groups={groups}
-          onSetItemStatus={handleSetChecklistItemStatus}
-          onSelectNote={(id) => {
-            setSelectedNoteId(id);
-            setScreen('DASHBOARD');
-          }}
+          todos={todos}
+          onAddItem={handleAddTodo}
+          onUpdateItem={handleUpdateTodo}
+          onDeleteItem={handleDeleteTodo}
+          onSetItemStatus={handleSetTodoStatus}
         />
       )}
     </>
@@ -878,11 +906,14 @@ export default function App() {
                   <NoteDetail 
                     note={selectedNote}
                     groups={groups}
+                    todos={selectedNote ? getTodosForDate(todos, selectedNote.dateString) : []}
                     onEdit={() => selectedNote && handleStartEditNote(selectedNote)}
                     onDelete={handleDeleteNote}
                     onRestore={handleRestoreNote}
                     onToggleFavorite={handleToggleFavorite}
-                    onSetChecklistItemStatus={handleSetChecklistItemStatus}
+                    onUpdateTodo={handleUpdateTodo}
+                    onDeleteTodo={handleDeleteTodo}
+                    onSetTodoStatus={handleSetTodoStatus}
                   />
 
                 </div>
@@ -911,6 +942,7 @@ export default function App() {
               notes={notes}
               groups={groups}
               schedules={activeSchedules}
+              todos={todos}
               selectedNote={selectedNote}
               onSelectNote={setSelectedNoteId}
               onAddNote={() => handleStartAddNote()}
@@ -918,7 +950,10 @@ export default function App() {
               onAddSchedule={handleAddSchedule}
               onUpdateSchedule={handleUpdateSchedule}
               onDeleteSchedule={handleDeleteSchedule}
-              onSetChecklistItemStatus={handleSetChecklistItemStatus}
+              onAddTodo={handleAddTodo}
+              onUpdateTodo={handleUpdateTodo}
+              onDeleteTodo={handleDeleteTodo}
+              onSetTodoStatus={handleSetTodoStatus}
               trashedSchedules={trashedSchedules}
               onRestoreNote={handleRestoreNote}
               onPermanentlyDeleteNote={handleDeleteNote}
@@ -968,7 +1003,7 @@ export default function App() {
             if (!archiveUser) throw new Error('로그인 후 프로필 이미지를 저장할 수 있습니다.');
             const imageUrl = await uploadMemoProfileImage(archiveUser.uid, file);
             setProfileImage(imageUrl);
-            await saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, profileImage: imageUrl, notificationSettings });
+            await saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, todos, profileImage: imageUrl, notificationSettings });
             setArchiveStatus('프로필 이미지가 자료실 Storage에 저장되었습니다.');
           }}
           darkMode={darkMode}
