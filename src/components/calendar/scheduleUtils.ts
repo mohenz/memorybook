@@ -131,3 +131,54 @@ export function splitAllDaySchedules(schedules: Schedule[]) {
     timed: schedules.filter((schedule) => !schedule.allDay),
   };
 }
+
+export interface TimedScheduleLayout {
+  schedule: Schedule;
+  columnIndex: number;
+  columnCount: number;
+}
+
+function scheduleInterval(schedule: Schedule) {
+  const start = timeToMinutes(schedule.startTime || '00:00');
+  const end = Math.max(start + 15, timeToMinutes(schedule.endTime || '01:00'));
+  return { start, end };
+}
+
+export function layoutOverlappingSchedules(schedules: Schedule[]): TimedScheduleLayout[] {
+  const sorted = [...schedules].sort((a, b) => {
+    const intervalA = scheduleInterval(a);
+    const intervalB = scheduleInterval(b);
+    return intervalA.start - intervalB.start || intervalB.end - intervalA.end || a.id.localeCompare(b.id);
+  });
+  const layouts: TimedScheduleLayout[] = [];
+  let cluster: Array<{ schedule: Schedule; columnIndex: number }> = [];
+  let clusterEnd = -1;
+  let columnEnds: number[] = [];
+
+  const finishCluster = () => {
+    const columnCount = Math.max(1, columnEnds.length);
+    cluster.forEach(({ schedule, columnIndex }) => layouts.push({ schedule, columnIndex, columnCount }));
+    cluster = [];
+    columnEnds = [];
+    clusterEnd = -1;
+  };
+
+  sorted.forEach((schedule) => {
+    const { start, end } = scheduleInterval(schedule);
+    if (cluster.length > 0 && start >= clusterEnd) finishCluster();
+
+    let columnIndex = columnEnds.findIndex((columnEnd) => columnEnd <= start);
+    if (columnIndex === -1) {
+      columnIndex = columnEnds.length;
+      columnEnds.push(end);
+    } else {
+      columnEnds[columnIndex] = end;
+    }
+
+    cluster.push({ schedule, columnIndex });
+    clusterEnd = Math.max(clusterEnd, end);
+  });
+
+  if (cluster.length > 0) finishCluster();
+  return layouts;
+}

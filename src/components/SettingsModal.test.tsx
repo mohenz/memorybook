@@ -29,6 +29,13 @@ const renderModal = (groups: Group[] = mockGroups) =>
   );
 
 describe('SettingsModal folder tab', () => {
+  it('uses the concise settings heading without a subtitle', () => {
+    const markup = renderModal();
+    expect(markup).toContain('>설정</h2>');
+    expect(markup).not.toContain('애플리케이션 설정');
+    expect(markup).not.toContain('나만의 맞춤형 디지털 노트 감성을 완성하세요');
+  });
+
   it('uses a fixed responsive height for every tab', () => {
     const markup = renderModal();
     expect(markup).toContain('h-[720px] max-h-[calc(100dvh-2rem)]');

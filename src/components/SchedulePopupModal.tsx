@@ -11,7 +11,7 @@ export default function SchedulePopupModal({ data, onClose }: { data: PopupSched
     <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
       <section role="dialog" aria-modal="true" aria-labelledby="schedule-popup-title" className="flex max-h-[90vh] w-[920px] max-w-full flex-col overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-2xl">
         <header className="flex items-center justify-between gap-3 border-b border-grid-line px-5 py-4">
-          <div className="flex items-center gap-3"><span className="rounded-xl bg-primary/10 p-2 text-primary"><CalendarClock className="h-5 w-5" /></span><div><h2 id="schedule-popup-title" className="text-lg font-extrabold text-on-surface">오늘의 주요 일정</h2><p className="text-xs text-on-surface-variant">오늘부터 3일간의 일정을 확인하세요.</p></div></div>
+          <div className="flex items-center gap-3"><span className="rounded-xl bg-primary/10 p-2 text-primary"><CalendarClock className="h-5 w-5" /></span><h2 id="schedule-popup-title" className="text-lg font-extrabold text-on-surface">주요 일정</h2></div>
           <button type="button" aria-label="주요 일정 팝업 닫기" onClick={() => onClose(dontShowToday)} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-high"><X className="h-5 w-5" /></button>
         </header>
         <div className="flex-1 overflow-y-auto p-4 md:p-5">

@@ -6,6 +6,7 @@ import {
   GRID_END_HOUR,
   GRID_START_HOUR,
   HOUR_HEIGHT_PX,
+  layoutOverlappingSchedules,
   PRIORITY_COLORS,
   TIME_STEP_MINUTES,
   minutesToTime,
@@ -55,7 +56,7 @@ export default function TimeGrid({ days, schedulesByDate, onSelectSchedule, onCr
                     key={schedule.id}
                     type="button"
                     onClick={() => onSelectSchedule(schedule)}
-                    className={`text-left text-xs font-bold px-1.5 py-0.5 rounded truncate border ${PRIORITY_COLORS[schedule.priority].bg} ${PRIORITY_COLORS[schedule.priority].border} ${PRIORITY_COLORS[schedule.priority].text}`}
+                    className={`text-left !text-[10px] font-bold px-1.5 py-0.5 rounded truncate border ${PRIORITY_COLORS[schedule.priority].bg} ${PRIORITY_COLORS[schedule.priority].border} ${PRIORITY_COLORS[schedule.priority].text}`}
                     title={schedule.title}
                   >
                     {schedule.title}
@@ -88,6 +89,7 @@ export default function TimeGrid({ days, schedulesByDate, onSelectSchedule, onCr
             {days.map((date) => {
               const dateString = toLocalDateString(date);
               const { timed } = splitAllDaySchedules(schedulesByDate.get(dateString) || []);
+              const timedLayouts = layoutOverlappingSchedules(timed);
               const currentDay = isSameLocalDate(date, today);
 
               return (
@@ -107,7 +109,7 @@ export default function TimeGrid({ days, schedulesByDate, onSelectSchedule, onCr
                     );
                   })}
 
-                  {timed.map((schedule) => (
+                  {timedLayouts.map(({ schedule, columnIndex, columnCount }) => (
                     <button
                       key={schedule.id}
                       type="button"
@@ -115,10 +117,12 @@ export default function TimeGrid({ days, schedulesByDate, onSelectSchedule, onCr
                         event.stopPropagation();
                         onSelectSchedule(schedule);
                       }}
-                      className={`absolute left-1 right-1 rounded-lg border-l-4 px-1.5 py-1 text-left overflow-hidden shadow-2xs hover:brightness-95 transition-all cursor-pointer ${PRIORITY_COLORS[schedule.priority].bg} ${PRIORITY_COLORS[schedule.priority].border}`}
+                      className={`absolute rounded-lg border-l-4 px-1.5 py-1 text-left overflow-hidden shadow-2xs hover:brightness-95 transition-all cursor-pointer ${PRIORITY_COLORS[schedule.priority].bg} ${PRIORITY_COLORS[schedule.priority].border}`}
                       style={{
                         top: scheduleTopPx(schedule.startTime || '00:00'),
                         height: scheduleHeightPx(schedule.startTime || '00:00', schedule.endTime || '01:00'),
+                        left: columnIndex === 0 ? 4 : `calc(${(columnIndex * 100) / columnCount}% + 2px)`,
+                        right: columnIndex === columnCount - 1 ? 4 : `calc(${((columnCount - columnIndex - 1) * 100) / columnCount}% + 2px)`,
                       }}
                       title={`${schedule.startTime}–${schedule.endTime} ${schedule.title}`}
                       aria-label={`${schedule.startTime}–${schedule.endTime} ${schedule.title}`}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'personal-notes-cache-v2';
+const CACHE_NAME = 'personal-notes-cache-v3';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/icon.svg'
@@ -40,6 +40,18 @@ self.addEventListener('fetch', (event) => {
 
   // Focus only on local assets
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Vite development modules keep stable URLs while their contents change.
+  // Let the browser fetch them directly so a local refresh never restores stale UI code.
+  const isLocalDevelopment = ['localhost', '127.0.0.1'].includes(url.hostname);
+  const isDevelopmentModule =
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/.vite/');
+
+  if (isLocalDevelopment || isDevelopmentModule) {
     return;
   }
 

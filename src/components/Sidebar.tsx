@@ -17,6 +17,7 @@ import {
   ListTodo
 } from 'lucide-react';
 import { Group, ScreenType } from '../types';
+import HelpModal from './HelpModal';
 
 interface SidebarProps {
   currentScreen: ScreenType;
@@ -44,6 +45,7 @@ export default function Sidebar({
   onOpenSettings
 }: SidebarProps) {
   const [showAddFolderModal, setShowAddFolderModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
   const handleCreateFolder = (e: React.FormEvent) => {
@@ -65,10 +67,10 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[280px] max-h-[44vh] lg:max-h-none lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-outline-variant bg-surface-container-low shrink-0 z-30">
+    <aside className="w-full lg:w-[280px] max-h-[44vh] lg:max-h-none lg:h-full lg:overflow-hidden flex flex-col border-b lg:border-b-0 lg:border-r border-outline-variant bg-surface-container-low shrink-0 z-30">
       {/* Profile Header */}
-      <div className="p-4 lg:p-6 lg:pb-4 min-h-0">
-        <div className="flex items-center justify-center lg:justify-start mb-4 lg:mb-6">
+      <div className="p-4 lg:px-5 lg:py-4 min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain custom-scrollbar">
+        <div className="flex items-center justify-center lg:justify-start mb-4">
           <button
             type="button"
             onClick={() => {
@@ -89,10 +91,10 @@ export default function Sidebar({
         </div>
 
         {/* Primary Screen Navigation */}
-        <nav className="flex flex-row lg:flex-col gap-2 lg:gap-1 overflow-x-auto lg:overflow-x-visible no-scrollbar pb-1 lg:pb-0">
+        <nav className="flex flex-row lg:flex-col gap-2 lg:gap-0.5 overflow-x-auto lg:overflow-x-visible no-scrollbar pb-1 lg:pb-0">
           <button
             onClick={() => setScreen('CALENDAR')}
-            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
               currentScreen === 'CALENDAR'
                 ? 'bg-primary text-white shadow-soft font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -107,7 +109,7 @@ export default function Sidebar({
               setScreen('DASHBOARD');
               setActiveGroupId('all');
             }}
-            className={`min-w-max lg:w-full flex items-center justify-between gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+            className={`min-w-max lg:w-full flex items-center justify-between gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
               currentScreen === 'DASHBOARD' && activeGroupId === 'all'
                 ? 'bg-primary text-white shadow-soft font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -131,7 +133,7 @@ export default function Sidebar({
               setScreen('DASHBOARD');
               setActiveGroupId('starred');
             }}
-            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
               currentScreen === 'DASHBOARD' && activeGroupId === 'starred'
                 ? 'bg-primary text-white shadow-soft font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -143,7 +145,7 @@ export default function Sidebar({
 
           <button
             onClick={() => setScreen('TODOS')}
-            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
               currentScreen === 'TODOS'
                 ? 'bg-primary text-white shadow-soft font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -153,8 +155,20 @@ export default function Sidebar({
             <span>TO-DO LIST</span>
           </button>
 
+          <button
+            onClick={() => setScreen('SEARCH')}
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
+              currentScreen === 'SEARCH'
+                ? 'bg-primary text-white shadow-soft font-semibold'
+                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+            }`}
+          >
+            <Tag className="w-5 h-5" />
+            <span>태그 및 검색</span>
+          </button>
+
           {/* Group Folder Divider */}
-          <div className="flex pt-1 lg:pt-5 pb-2 px-4 items-center justify-between min-w-max lg:min-w-0">
+          <div className="flex pt-1 lg:pt-3 pb-1 px-4 items-center justify-between min-w-max lg:min-w-0">
             <span className="text-[11px] font-bold text-outline uppercase tracking-wider">그룹 폴더</span>
             <button
               onClick={() => setShowAddFolderModal(true)}
@@ -166,7 +180,7 @@ export default function Sidebar({
           </div>
 
           {/* Dynamic Folder Items */}
-          <div className="hidden lg:flex max-h-[220px] overflow-y-auto custom-scrollbar flex-col gap-0.5">
+          <div className="hidden lg:flex flex-col gap-0.5">
             {groups.map((group) => (
               <button
                 key={group.id}
@@ -174,7 +188,7 @@ export default function Sidebar({
                   setScreen('DASHBOARD');
                   setActiveGroupId(group.id);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+                className={`w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
                   currentScreen === 'DASHBOARD' && activeGroupId === group.id
                     ? 'bg-primary-container text-on-primary-container font-semibold'
                     : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -186,30 +200,18 @@ export default function Sidebar({
             ))}
           </div>
 
-          <div className="hidden lg:block my-1 border-t border-outline-variant/30" />
+          <div className="hidden lg:block my-0.5 border-t border-outline-variant/30" />
 
           <button
             onClick={onOpenArchive}
-            className="min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+            className="min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
             title="자료실 열기"
           >
             <Archive className="w-5 h-5" />
             <span>자료실</span>
           </button>
 
-          <button
-            onClick={() => setScreen('SEARCH')}
-            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
-              currentScreen === 'SEARCH'
-                ? 'bg-primary text-white shadow-soft font-semibold'
-                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-            }`}
-          >
-            <Tag className="w-5 h-5" />
-            <span>태그 및 검색</span>
-          </button>
-
-          <div className="hidden lg:block my-1 border-t border-outline-variant/30" />
+          <div className="hidden lg:block my-0.5 border-t border-outline-variant/30" />
 
           {/* Trash Navigation */}
           <button
@@ -217,7 +219,7 @@ export default function Sidebar({
               setScreen('DASHBOARD');
               setActiveGroupId('trash');
             }}
-            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm transition-all font-medium ${
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${
               currentScreen === 'DASHBOARD' && activeGroupId === 'trash'
                 ? 'bg-red-50 text-red-700 font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -230,10 +232,10 @@ export default function Sidebar({
       </div>
 
       {/* Sidebar Footer */}
-      <div className="hidden lg:flex mt-auto p-4 border-t border-outline-variant/30 flex-col gap-1">
+      <div className="hidden lg:flex mt-auto shrink-0 p-3 border-t border-outline-variant/30 flex-col gap-1 bg-surface-container-low">
         <button 
           onClick={() => setShowAddFolderModal(true)}
-          className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-dashed border-outline text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary transition-all active:scale-95 text-sm font-semibold cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 py-1.5 px-4 rounded-xl border border-dashed border-outline text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary transition-all active:scale-95 text-sm font-semibold cursor-pointer"
         >
           <FolderPlus className="w-4.5 h-4.5 text-primary" />
           <span>새 폴더 추가</span>
@@ -241,7 +243,7 @@ export default function Sidebar({
         
         <div className="flex items-center justify-between px-2 pt-2 text-xs text-outline font-semibold">
           <button 
-            onClick={() => alert("도움말: 이 앱은 태블릿 환경에 맞춰진 프리미엄 노팅 다이어리입니다.\n왼쪽 사이드바에서 노트 카테고리를 필터링하고, 달력을 클릭하여 특정 날짜에 노트를 기록해 보세요!")}
+            onClick={() => setShowHelpModal(true)}
             className="flex items-center gap-1.5 py-1 px-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant"
           >
             <HelpCircle className="w-3.5 h-3.5" />
@@ -259,6 +261,8 @@ export default function Sidebar({
 
         </div>
       </div>
+
+      {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
 
       {/* Add Folder Modal Popover */}
       {showAddFolderModal && (

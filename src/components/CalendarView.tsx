@@ -102,26 +102,25 @@ export default function CalendarView({
 
   return (
     <div className="flex-1 flex flex-col h-full min-h-0 bg-background select-none relative">
-      <header className="sticky top-0 w-full flex flex-col gap-3 px-4 md:px-8 py-3 z-20 bg-background/90 backdrop-blur-md border-b border-grid-line shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 md:gap-5 min-w-0">
-            <h1 className="font-sans text-base md:text-lg font-bold text-on-background truncate">
+      <header className="sticky top-0 z-20 flex w-full shrink-0 items-center gap-2 overflow-x-auto border-b border-grid-line bg-background/90 px-3 py-2 backdrop-blur-md no-scrollbar md:px-4">
+        <div className="flex shrink-0 items-center gap-2">
+            <h1 className="w-[22rem] shrink-0 whitespace-nowrap font-sans text-[18px] font-bold tabular-nums text-on-background">
               {formatCalendarPeriod(selectedDate, viewMode)}
             </h1>
 
-            <div className="flex items-center bg-surface-container rounded-full p-1 shrink-0">
+            <div className="flex shrink-0 items-center rounded-full bg-surface-container p-0.5">
               <button
                 type="button"
                 onClick={() => movePeriod(-1)}
                 aria-label={`이전 ${MOVE_LABEL[viewMode]}`}
-                className="p-1 hover:bg-surface-dim rounded-full transition-all active:scale-90 text-on-surface-variant cursor-pointer"
+                className="rounded-full p-1 text-on-surface-variant transition-all hover:bg-surface-dim active:scale-90 cursor-pointer"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
                 onClick={moveToToday}
-                className="px-3 md:px-4 py-1 font-sans text-xs font-bold text-primary bg-surface-container-lowest rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
+                className="rounded-full bg-surface-container-lowest px-2.5 py-1 font-sans text-[11px] font-bold text-primary shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 오늘
               </button>
@@ -129,37 +128,34 @@ export default function CalendarView({
                 type="button"
                 onClick={() => movePeriod(1)}
                 aria-label={`다음 ${MOVE_LABEL[viewMode]}`}
-                className="p-1 hover:bg-surface-dim rounded-full transition-all active:scale-90 text-on-surface-variant cursor-pointer"
+                className="rounded-full p-1 text-on-surface-variant transition-all hover:bg-surface-dim active:scale-90 cursor-pointer"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
-          </div>
-
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full md:justify-end">
-          <div className="flex items-center bg-surface-container rounded-xl p-1 shrink-0" aria-label="캘린더 보기 방식">
+          <div className="flex shrink-0 items-center rounded-xl bg-surface-container p-0.5" aria-label="캘린더 보기 방식">
             {VIEW_OPTIONS.map((option) => (
               <button
                 type="button"
                 key={option.value}
                 onClick={() => setViewMode(option.value)}
                 aria-pressed={viewMode === option.value}
-                className={`px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${viewMode === option.value ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant hover:bg-surface-container-lowest'}`}
+                className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all cursor-pointer ${viewMode === option.value ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant hover:bg-surface-container-lowest'}`}
               >
                 {option.label}
               </button>
             ))}
           </div>
 
-          <div className="relative flex-1 md:flex-none">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
+          <div className="relative w-48 shrink-0">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-outline" />
             <input
               type="search"
               aria-label="캘린더 일정 검색"
               placeholder="일정 검색..."
-              className="bg-surface border border-transparent rounded-xl h-10 pl-9 pr-4 w-full md:w-56 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-xs font-medium text-on-surface placeholder:text-outline select-text"
+              className="h-8 w-full rounded-xl border border-transparent bg-surface pl-8 pr-2 text-[11px] font-medium text-on-surface transition-all placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary select-text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
@@ -168,13 +164,11 @@ export default function CalendarView({
           <button
             type="button"
             onClick={() => setScheduleModal({ mode: 'create', dateString: selectedDateString, startTime: '09:00' })}
-            className="bg-primary text-white text-xs font-bold px-4 h-10 rounded-xl flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all shadow-soft cursor-pointer shrink-0"
+            className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-primary px-3 text-[11px] font-bold text-white shadow-soft transition-all hover:brightness-110 active:scale-95 cursor-pointer"
           >
-            <CalendarPlus className="w-4 h-4" />
+            <CalendarPlus className="h-3.5 w-3.5" />
             <span>새 일정</span>
           </button>
-
-        </div>
       </header>
 
       <div className="flex-1 min-h-0 overflow-hidden">

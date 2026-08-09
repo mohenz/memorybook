@@ -155,10 +155,7 @@ export default function SettingsModal({
             <div className="p-2 bg-primary/10 text-primary rounded-xl dark:bg-primary/20">
               <Sparkles className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="font-sans text-lg font-bold text-on-background">애플리케이션 설정</h2>
-              <p className="font-sans text-xs text-on-surface-variant">나만의 맞춤형 디지털 노트 감성을 완성하세요</p>
-            </div>
+            <h2 className="font-sans text-lg font-bold text-on-background">설정</h2>
           </div>
           <button 
             onClick={onClose}

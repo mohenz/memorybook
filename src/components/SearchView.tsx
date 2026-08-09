@@ -28,7 +28,7 @@ export default function SearchView({
   onSelectNote,
   onAddNote
 }: SearchViewProps) {
-  const [query, setQuery] = useState('아이디어');
+  const [query, setQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState<{
     group: string; // "all" or specific
     hasImageOnly: boolean;
@@ -134,12 +134,15 @@ export default function SearchView({
           </div>
 
           {/* Dynamic Filter Chips */}
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex flex-wrap items-center gap-3 pb-1">
             
             {/* Group Filter Chip */}
-            <div className="relative">
+            <div className="relative z-40">
               <button 
-                onClick={() => setShowGroupDropdown(!showGroupDropdown)}
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={showGroupDropdown}
+                onClick={() => setShowGroupDropdown((visible) => !visible)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all cursor-pointer select-none ${
                   activeFilters.group !== 'all' 
                     ? 'bg-primary text-white shadow-soft' 
@@ -152,8 +155,11 @@ export default function SearchView({
 
               {/* Group Dropdown Menu */}
               {showGroupDropdown && (
-                <div className="absolute left-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl w-40 py-2 z-30 animate-fade-in-scale">
+                <div role="listbox" aria-label="검색 그룹 필터" className="absolute left-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl w-40 max-h-64 overflow-y-auto custom-scrollbar py-2 z-50 animate-fade-in-scale">
                   <button 
+                    type="button"
+                    role="option"
+                    aria-selected={activeFilters.group === 'all'}
                     onClick={() => toggleGroupFilter('all')}
                     className="w-full text-left px-4 py-2 text-xs font-bold text-on-surface hover:bg-surface transition-colors"
                   >
@@ -162,6 +168,9 @@ export default function SearchView({
                   {groups.map(g => (
                     <button 
                       key={g.id}
+                      type="button"
+                      role="option"
+                      aria-selected={activeFilters.group === g.id}
                       onClick={() => toggleGroupFilter(g.id)}
                       className="w-full text-left px-4 py-2 text-xs font-semibold text-on-surface hover:bg-surface transition-colors"
                     >

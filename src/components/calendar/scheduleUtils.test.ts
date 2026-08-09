@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Schedule } from '../../types';
 import {
   groupSchedulesByDate,
+  layoutOverlappingSchedules,
   minutesToTime,
   scheduleHeightPx,
   scheduleOccursOnDate,
@@ -145,5 +146,55 @@ describe('splitAllDaySchedules', () => {
       allDay: [allDay],
       timed: [timed],
     });
+  });
+});
+
+describe('layoutOverlappingSchedules', () => {
+  it('splits schedules that overlap into separate columns', () => {
+    const layouts = layoutOverlappingSchedules([
+      makeSchedule({ id: 'a', startTime: '10:00', endTime: '11:00' }),
+      makeSchedule({ id: 'b', startTime: '10:00', endTime: '11:00' }),
+      makeSchedule({ id: 'c', startTime: '10:30', endTime: '12:00' }),
+    ]);
+
+    expect(layouts.map(({ schedule, columnIndex, columnCount }) => ({
+      id: schedule.id,
+      columnIndex,
+      columnCount,
+    }))).toEqual([
+      { id: 'a', columnIndex: 0, columnCount: 3 },
+      { id: 'b', columnIndex: 1, columnCount: 3 },
+      { id: 'c', columnIndex: 2, columnCount: 3 },
+    ]);
+  });
+
+  it('keeps back-to-back schedules at full width', () => {
+    const layouts = layoutOverlappingSchedules([
+      makeSchedule({ id: 'a', startTime: '10:00', endTime: '11:00' }),
+      makeSchedule({ id: 'b', startTime: '11:00', endTime: '12:00' }),
+    ]);
+
+    expect(layouts.map(({ columnIndex, columnCount }) => ({ columnIndex, columnCount }))).toEqual([
+      { columnIndex: 0, columnCount: 1 },
+      { columnIndex: 0, columnCount: 1 },
+    ]);
+  });
+
+  it('uses the maximum simultaneous overlap for a connected time range', () => {
+    const layouts = layoutOverlappingSchedules([
+      makeSchedule({ id: 'a', startTime: '09:00', endTime: '10:00' }),
+      makeSchedule({ id: 'b', startTime: '09:30', endTime: '10:30' }),
+      makeSchedule({ id: 'c', startTime: '10:00', endTime: '11:00' }),
+    ]);
+
+    expect(layouts.map(({ schedule, columnIndex, columnCount }) => ({
+      id: schedule.id,
+      columnIndex,
+      columnCount,
+    }))).toEqual([
+      { id: 'a', columnIndex: 0, columnCount: 2 },
+      { id: 'b', columnIndex: 1, columnCount: 2 },
+      { id: 'c', columnIndex: 0, columnCount: 2 },
+    ]);
   });
 });

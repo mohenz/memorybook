@@ -21,12 +21,12 @@ const renderCalendar = (date: Date, schedules: Schedule[] = [], notes: Note[] = 
 describe('CalendarView current date', () => {
   afterEach(() => vi.useRealTimers());
 
-  it('uses the compact responsive font size for the period title', () => {
+  it('uses the fixed 18px period title in the single-line toolbar', () => {
     vi.useFakeTimers();
     const markup = renderCalendar(new Date(2026, 6, 14, 12));
 
     expect(markup).toContain(
-      'class="font-sans text-base md:text-lg font-bold text-on-background truncate">2026년 7월',
+      'class="w-[22rem] shrink-0 whitespace-nowrap font-sans text-[18px] font-bold tabular-nums text-on-background">2026년 7월',
     );
   });
 
