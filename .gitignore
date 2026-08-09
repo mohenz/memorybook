@@ -6,3 +6,5 @@ backups/
 test-results/
 .project-control-update.patch
 *.log
+
+.vercel
