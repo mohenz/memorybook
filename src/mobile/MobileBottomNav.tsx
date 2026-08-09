@@ -19,7 +19,7 @@ const TABS: Array<{ id: MobileTab; label: string; Icon: React.ElementType }> = [
 export default function MobileBottomNav({ activeTab, onChangeTab }: MobileBottomNavProps) {
   return (
     <nav
-      className="relative z-30 grid w-full min-w-0 max-w-full shrink-0 grid-cols-5 overflow-hidden border-t border-grid-line bg-background"
+      className="relative z-50 grid w-full min-w-0 max-w-full shrink-0 grid-cols-5 overflow-hidden border-t border-grid-line bg-background"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {TABS.map(({ id, label, Icon }) => (

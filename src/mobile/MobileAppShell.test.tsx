@@ -136,6 +136,37 @@ describe('MobileAppShell', () => {
     expect(markup).toContain('grid-cols-5');
     expect(markup).toContain('min-w-0 max-w-full');
   });
+
+  it('keeps the bottom navigation visible on the TO-DO screen', () => {
+    const markup = renderToStaticMarkup(
+      <MobileAppShell
+        initialTab="TODOS"
+        notes={[buildNote({ checklist: [{ id: 'todo-1', text: '할 일', done: false }] })]}
+        groups={[]}
+        schedules={[]}
+        selectedNote={null}
+        onSelectNote={() => undefined}
+        onAddNote={() => undefined}
+        onEditNote={() => undefined}
+        onAddSchedule={() => undefined}
+        onUpdateSchedule={() => undefined}
+        onDeleteSchedule={() => undefined}
+        onSetChecklistItemStatus={() => undefined}
+        userId="test-user"
+        profileImage="https://example.com/avatar.png"
+        onOpenSettings={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('TO-DO LIST');
+    expect(markup).toContain('flex min-h-0 flex-1 flex-col overflow-hidden');
+    expect(markup).toContain('relative z-50 grid');
+    expect(markup).toContain('>메모<');
+    expect(markup).toContain('>캘린더<');
+    expect(markup).toContain('>TO-DO<');
+    expect(markup).toContain('>파일<');
+    expect(markup).toContain('>휴지통<');
+  });
 });
 
 describe('MobileCalendarScreen', () => {

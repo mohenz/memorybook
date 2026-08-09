@@ -21,6 +21,7 @@ function isUploadInProgressStatus(status: string) {
 }
 
 interface MobileAppShellProps {
+  initialTab?: MobileTab;
   notes: Note[];
   groups: Group[];
   schedules: Schedule[];
@@ -43,6 +44,7 @@ interface MobileAppShellProps {
 }
 
 export default function MobileAppShell({
+  initialTab = 'NOTES',
   notes,
   groups,
   schedules,
@@ -63,7 +65,7 @@ export default function MobileAppShell({
   profileImage,
   onOpenSettings,
 }: MobileAppShellProps) {
-  const [activeTab, setActiveTab] = useState<MobileTab>('NOTES');
+  const [activeTab, setActiveTab] = useState<MobileTab>(initialTab);
   const [noteView, setNoteView] = useState<NoteView>('LIST');
   const [fileView, setFileView] = useState<FileView>('LIST');
   const [selectedFile, setSelectedFile] = useState<ArchiveFile | null>(null);
@@ -164,12 +166,14 @@ export default function MobileAppShell({
       )}
 
       {activeTab === 'TODOS' && (
-        <TodoListView
-          notes={notes}
-          groups={groups}
-          onSetItemStatus={onSetChecklistItemStatus}
-          onSelectNote={handleSelectNoteFromCalendar}
-        />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <TodoListView
+            notes={notes}
+            groups={groups}
+            onSetItemStatus={onSetChecklistItemStatus}
+            onSelectNote={handleSelectNoteFromCalendar}
+          />
+        </div>
       )}
 
       {activeTab === 'FILES' &&
