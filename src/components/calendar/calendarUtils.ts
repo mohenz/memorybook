@@ -1,7 +1,7 @@
 import { Note } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 
-export type CalendarViewMode = 'month' | 'week' | 'day';
+export type CalendarViewMode = 'month' | 'week' | 'day' | 'year';
 
 export interface CalendarDayCell {
   date: Date;
@@ -25,6 +25,14 @@ export const isSameLocalDate = (left: Date, right: Date) =>
 export function shiftCalendarDate(date: Date, mode: CalendarViewMode, offset: number) {
   if (mode === 'day') return addDays(date, offset);
   if (mode === 'week') return addDays(date, offset * 7);
+  if (mode === 'year') {
+    const targetYear = date.getFullYear() + offset;
+    return new Date(
+      targetYear,
+      date.getMonth(),
+      clampDayToMonth(date.getDate(), targetYear, date.getMonth()),
+    );
+  }
 
   const targetMonth = new Date(date.getFullYear(), date.getMonth() + offset, 1);
   return new Date(
@@ -55,7 +63,14 @@ export const getWeekDates = (selectedDate: Date) => {
   return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 };
 
+export const getYearDates = (selectedDate: Date) => {
+  const year = selectedDate.getFullYear();
+  const dayCount = Math.round((Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)) / (24 * 60 * 60 * 1000));
+  return Array.from({ length: dayCount }, (_, index) => new Date(year, 0, index + 1));
+};
+
 export function formatCalendarPeriod(date: Date, mode: CalendarViewMode) {
+  if (mode === 'year') return `${date.getFullYear()}년`;
   if (mode === 'month') return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
 
   if (mode === 'day') {

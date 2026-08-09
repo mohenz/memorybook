@@ -197,11 +197,37 @@ describe('MobileCalendarScreen', () => {
     );
 
     expect(markup).toContain('당일 일정');
+    expect(markup).toContain('모바일 캘린더 보기');
     expect(markup).toContain('전날');
     expect(markup).toContain('오늘');
     expect(markup).toContain('다음날');
     expect(markup).toContain('오늘 미팅');
     expect(markup).toContain('10:00–11:00');
+    vi.useRealTimers();
+  });
+
+  it('renders a seven-day card strip in weekly mode', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 9, 12));
+
+    const markup = renderToStaticMarkup(
+      <MobileCalendarScreen
+        initialViewMode="week"
+        schedules={[]}
+        profileImage="https://example.com/avatar.png"
+        onOpenSettings={() => undefined}
+        onAddSchedule={() => undefined}
+        onUpdateSchedule={() => undefined}
+        onDeleteSchedule={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('주간 일정');
+    expect(markup).toContain('aria-label="주간 일정 카드"');
+    expect(markup).toContain('aria-label="이전 주"');
+    expect(markup).toContain('aria-label="다음 주"');
+    expect(markup).toContain('w-[84px] shrink-0');
+    expect(markup).toContain('aria-pressed="true"');
     vi.useRealTimers();
   });
 });

@@ -9,11 +9,13 @@ import MonthCalendarScreen from './calendar/MonthCalendarScreen';
 import ScheduleFormModal, { ScheduleDraft } from './calendar/ScheduleFormModal';
 import SelectedDayPanel from './calendar/SelectedDayPanel';
 import WeekCalendarScreen from './calendar/WeekCalendarScreen';
+import YearCalendarScreen from './calendar/YearCalendarScreen';
 import {
   CalendarViewMode,
   formatCalendarPeriod,
   getMonthCells,
   getWeekDates,
+  getYearDates,
   groupCalendarNotes,
   shiftCalendarDate,
 } from './calendar/calendarUtils';
@@ -37,15 +39,17 @@ interface CalendarViewProps {
 }
 
 const VIEW_OPTIONS: Array<{ value: CalendarViewMode; label: string }> = [
-  { value: 'month', label: '월간' },
   { value: 'week', label: '주간' },
   { value: 'day', label: '일간' },
+  { value: 'month', label: '월간' },
+  { value: 'year', label: '연간' },
 ];
 
 const MOVE_LABEL: Record<CalendarViewMode, string> = {
   month: '달',
   week: '주',
   day: '일',
+  year: '년',
 };
 
 export default function CalendarView({
@@ -64,6 +68,7 @@ export default function CalendarView({
 
   const selectedDateString = toLocalDateString(selectedDate);
   const visibleDateStrings = useMemo(() => {
+    if (viewMode === 'year') return getYearDates(selectedDate).map(toLocalDateString);
     if (viewMode === 'month') return getMonthCells(selectedDate).map((cell) => cell.dateString);
     if (viewMode === 'week') return getWeekDates(selectedDate).map(toLocalDateString);
     return [selectedDateString];
@@ -135,19 +140,19 @@ export default function CalendarView({
             </div>
         </div>
 
-          <div className="flex shrink-0 items-center rounded-xl bg-surface-container p-0.5" aria-label="캘린더 보기 방식">
-            {VIEW_OPTIONS.map((option) => (
-              <button
-                type="button"
-                key={option.value}
-                onClick={() => setViewMode(option.value)}
-                aria-pressed={viewMode === option.value}
-                className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-all cursor-pointer ${viewMode === option.value ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant hover:bg-surface-container-lowest'}`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <label className="relative shrink-0">
+            <span className="sr-only">캘린더 보기 방식</span>
+            <select
+              aria-label="캘린더 보기 방식"
+              value={viewMode}
+              onChange={(event) => setViewMode(event.target.value as CalendarViewMode)}
+              className="h-8 w-24 cursor-pointer rounded-xl border border-outline-variant bg-surface-container px-3 !text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {VIEW_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
 
           <div className="relative w-48 shrink-0">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-outline" />
@@ -172,7 +177,16 @@ export default function CalendarView({
       </header>
 
       <div className="flex-1 min-h-0 overflow-hidden">
-        {viewMode === 'day' ? (
+        {viewMode === 'year' ? (
+          <YearCalendarScreen
+            selectedDate={selectedDate}
+            schedulesByDate={schedulesByDate}
+            onSelectMonth={(date) => {
+              setSelectedDate(date);
+              setViewMode('month');
+            }}
+          />
+        ) : viewMode === 'day' ? (
           <DayCalendarScreen
             selectedDate={selectedDate}
             schedules={selectedSchedules}

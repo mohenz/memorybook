@@ -6,6 +6,7 @@ import ScheduleFormModal, { ScheduleDraft } from '../../components/calendar/Sche
 import { PRIORITY_COLORS, groupSchedulesByDate } from '../../components/calendar/scheduleUtils';
 
 interface MobileCalendarScreenProps {
+  initialViewMode?: 'day' | 'week';
   schedules: Schedule[];
   profileImage: string;
   onOpenSettings: () => void;
@@ -37,12 +38,24 @@ function formatFullDate(date: Date) {
   }).format(date);
 }
 
+function getWeekDates(date: Date) {
+  const sunday = addDays(date, -date.getDay());
+  return Array.from({ length: 7 }, (_, index) => addDays(sunday, index));
+}
+
+function formatWeekRange(dates: Date[]) {
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+  return `${first.getMonth() + 1}월 ${first.getDate()}일 – ${last.getMonth() + 1}월 ${last.getDate()}일`;
+}
+
 function scheduleTime(schedule: Schedule) {
   if (schedule.allDay) return '종일';
   return `${schedule.startTime || '00:00'}–${schedule.endTime || '00:00'}`;
 }
 
 export default function MobileCalendarScreen({
+  initialViewMode = 'day',
   schedules,
   profileImage,
   onOpenSettings,
@@ -51,8 +64,12 @@ export default function MobileCalendarScreen({
   onDeleteSchedule,
 }: MobileCalendarScreenProps) {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState<'day' | 'week'>(initialViewMode);
   const [scheduleModal, setScheduleModal] = useState<Schedule | null | undefined>(undefined);
-  const dates = useMemo(() => [-1, 0, 1].map((offset) => addDays(selectedDate, offset)), [selectedDate]);
+  const dates = useMemo(
+    () => viewMode === 'week' ? getWeekDates(selectedDate) : [-1, 0, 1].map((offset) => addDays(selectedDate, offset)),
+    [selectedDate, viewMode],
+  );
   const dateStrings = useMemo(() => dates.map(toLocalDateString), [dates]);
   const schedulesByDate = useMemo(
     () => groupSchedulesByDate(schedules, '', dateStrings),
@@ -80,51 +97,74 @@ export default function MobileCalendarScreen({
           <img src={profileImage} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold text-on-surface-variant">당일 일정</p>
+          <p className="text-[11px] font-semibold text-on-surface-variant">
+            {viewMode === 'week' ? '주간 일정' : '당일 일정'}
+          </p>
           <h1 className="truncate !text-base font-bold text-on-surface">{formatFullDate(selectedDate)}</h1>
         </div>
-        <button
-          type="button"
-          onClick={() => setSelectedDate(new Date())}
-          className="h-9 rounded-xl bg-primary/10 px-3 text-xs font-bold text-primary"
-        >
-          오늘
-        </button>
+        <div className="flex shrink-0 items-center rounded-xl bg-surface-container p-0.5" aria-label="모바일 캘린더 보기">
+          <button
+            type="button"
+            aria-pressed={viewMode === 'day'}
+            onClick={() => {
+              setSelectedDate(new Date());
+              setViewMode('day');
+            }}
+            className={`h-8 rounded-lg px-2.5 text-xs font-bold ${viewMode === 'day' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+          >
+            오늘
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === 'week'}
+            onClick={() => setViewMode('week')}
+            className={`h-8 rounded-lg px-2.5 text-xs font-bold ${viewMode === 'week' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+          >
+            주간
+          </button>
+        </div>
       </header>
 
       <div className="flex items-center justify-between px-4 pb-2 pt-3">
         <button
           type="button"
-          aria-label="이전 날짜"
-          onClick={() => setSelectedDate((date) => addDays(date, -1))}
+          aria-label={viewMode === 'week' ? '이전 주' : '이전 날짜'}
+          onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? -7 : -1))}
           className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <p className="text-sm font-bold text-on-surface">{formatDate(selectedDate)} 일정</p>
+        <p className="text-sm font-bold text-on-surface">
+          {viewMode === 'week' ? formatWeekRange(dates) : `${formatDate(selectedDate)} 일정`}
+        </p>
         <button
           type="button"
-          aria-label="다음 날짜"
-          onClick={() => setSelectedDate((date) => addDays(date, 1))}
+          aria-label={viewMode === 'week' ? '다음 주' : '다음 날짜'}
+          onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? 7 : 1))}
           className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 px-3 pb-3" aria-label="전날 오늘 다음날 일정 카드">
+      <div
+        className={viewMode === 'week' ? 'no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3' : 'grid grid-cols-3 gap-2 px-3 pb-3'}
+        aria-label={viewMode === 'week' ? '주간 일정 카드' : '전날 오늘 다음날 일정 카드'}
+      >
         {dates.map((date, index) => {
           const dateString = dateStrings[index];
           const daySchedules = schedulesByDate.get(dateString) || [];
-          const isSelected = index === 1;
-          const label = index === 0 ? '전날' : index === 2 ? '다음날' : dateString === todayString ? '오늘' : '선택일';
+          const isSelected = dateString === selectedDateString;
+          const label = viewMode === 'week'
+            ? new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(date)
+            : index === 0 ? '전날' : index === 2 ? '다음날' : dateString === todayString ? '오늘' : '선택일';
 
           return (
             <button
               key={dateString}
               type="button"
               onClick={() => setSelectedDate(date)}
-              className={`min-w-0 rounded-2xl border p-3 text-left shadow-soft transition-colors ${
+              className={`${viewMode === 'week' ? 'w-[84px] shrink-0' : 'min-w-0'} rounded-2xl border p-3 text-left shadow-soft transition-colors ${
                 isSelected
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-outline-variant bg-surface-container-lowest text-on-surface'

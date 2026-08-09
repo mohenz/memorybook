@@ -144,6 +144,14 @@ describe('CalendarView toolbar layout', () => {
     const markup = renderCalendar(new Date(2026, 6, 23, 12));
 
     expect(markup.indexOf('캘린더 보기 방식')).toBeLessThan(markup.indexOf('캘린더 일정 검색'));
+    expect(markup).toContain('<select aria-label="캘린더 보기 방식"');
+    expect(markup).toContain('<option value="week">주간</option>');
+    expect(markup).toContain('<option value="day">일간</option>');
+    expect(markup).toContain('<option value="month" selected="">월간</option>');
+    expect(markup).toContain('<option value="year">연간</option>');
+    expect(markup.indexOf('value="week"')).toBeLessThan(markup.indexOf('value="day"'));
+    expect(markup.indexOf('value="day"')).toBeLessThan(markup.indexOf('value="month"'));
+    expect(markup.indexOf('value="month"')).toBeLessThan(markup.indexOf('value="year"'));
 
     vi.useRealTimers();
   });

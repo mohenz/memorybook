@@ -4,6 +4,7 @@ import {
   formatCalendarPeriod,
   getMonthCells,
   getWeekDates,
+  getYearDates,
   groupCalendarNotes,
   shiftCalendarDate,
 } from './calendarUtils';
@@ -37,6 +38,10 @@ describe('calendar date navigation', () => {
     expect(shiftCalendarDate(new Date(2026, 11, 31), 'day', 1)).toEqual(new Date(2027, 0, 1));
   });
 
+  it('moves the annual view by one year', () => {
+    expect(shiftCalendarDate(new Date(2026, 6, 15), 'year', 1)).toEqual(new Date(2027, 6, 15));
+  });
+
   it('builds a Sunday-to-Saturday week', () => {
     const week = getWeekDates(new Date(2026, 6, 23));
     expect(week[0]).toEqual(new Date(2026, 6, 19));
@@ -49,14 +54,19 @@ describe('calendar date navigation', () => {
     expect(cells[0].dateString).toBe('2026-06-28');
     expect(cells[34].dateString).toBe('2026-08-01');
   });
+
+  it('returns every date in the selected year', () => {
+    expect(getYearDates(new Date(2028, 6, 23))).toHaveLength(366);
+  });
 });
 
 describe('calendar presentation data', () => {
-  it('formats month, week, and day period labels', () => {
+  it('formats month, week, day, and year period labels', () => {
     const date = new Date(2026, 6, 23);
     expect(formatCalendarPeriod(date, 'month')).toBe('2026년 7월');
     expect(formatCalendarPeriod(date, 'week')).toBe('2026년 7월 19일 – 7월 25일');
     expect(formatCalendarPeriod(date, 'day')).toContain('2026년 7월 23일');
+    expect(formatCalendarPeriod(date, 'year')).toBe('2026년');
   });
 
   it('groups matching notes and excludes deleted or unmatched notes', () => {
