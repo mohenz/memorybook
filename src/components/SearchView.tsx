@@ -2,11 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Search, 
   X, 
-  ChevronDown, 
   Calendar, 
-  Image as ImageIcon, 
-  Star, 
-  ArrowUpDown, 
   Grid, 
   List,
   Pin,
@@ -29,19 +25,7 @@ export default function SearchView({
   onAddNote
 }: SearchViewProps) {
   const [query, setQuery] = useState('');
-  const [activeFilters, setActiveFilters] = useState<{
-    group: string; // "all" or specific
-    hasImageOnly: boolean;
-    starredOnly: boolean;
-    sortDesc: boolean;
-  }>({
-    group: 'all',
-    hasImageOnly: false,
-    starredOnly: false,
-    sortDesc: true
-  });
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
-  const [showGroupDropdown, setShowGroupDropdown] = useState(false);
 
   // Filter notes based on Query and Active Filter Chips
   const filteredNotes = useMemo(() => {
@@ -56,28 +40,12 @@ export default function SearchView({
           note.content.toLowerCase().includes(lowerQuery)
         );
       })
-      .filter(note => {
-        // Folder group filter
-        if (activeFilters.group === 'all') return true;
-        return note.groupId === activeFilters.group;
-      })
-      .filter(note => {
-        // Has images filter
-        if (!activeFilters.hasImageOnly) return true;
-        return note.images && note.images.length > 0;
-      })
-      .filter(note => {
-        // Starred/Favorite filter
-        if (!activeFilters.starredOnly) return true;
-        return note.isFavorite;
-      })
       .sort((a, b) => {
-        // Sort order
         const timeA = new Date(a.dateString).getTime() || 0;
         const timeB = new Date(b.dateString).getTime() || 0;
-        return activeFilters.sortDesc ? timeB - timeA : timeA - timeB;
+        return timeB - timeA;
       });
-  }, [notes, query, activeFilters]);
+  }, [notes, query]);
 
   // Highlight query keyword matches beautifully
   const renderHighlightedText = (text: string, highlight: string) => {
@@ -99,13 +67,8 @@ export default function SearchView({
     );
   };
 
-  const toggleGroupFilter = (id: string) => {
-    setActiveFilters(prev => ({ ...prev, group: id }));
-    setShowGroupDropdown(false);
-  };
-
   return (
-    <div className="flex-1 flex flex-col h-full bg-background select-none">
+    <div className="flex min-h-0 flex-1 flex-col bg-background select-none">
       
       {/* Search Header Controls */}
       <header className="sticky top-0 w-full z-20 bg-background/80 backdrop-blur-md px-4 md:px-10 py-5 md:py-6 border-b border-grid-line shadow-xs">
@@ -131,92 +94,6 @@ export default function SearchView({
                 <X className="w-5 h-5" />
               </button>
             )}
-          </div>
-
-          {/* Dynamic Filter Chips */}
-          <div className="flex flex-wrap items-center gap-3 pb-1">
-            
-            {/* Group Filter Chip */}
-            <div className="relative z-40">
-              <button 
-                type="button"
-                aria-haspopup="listbox"
-                aria-expanded={showGroupDropdown}
-                onClick={() => setShowGroupDropdown((visible) => !visible)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all cursor-pointer select-none ${
-                  activeFilters.group !== 'all' 
-                    ? 'bg-primary text-white shadow-soft' 
-                    : 'bg-surface border border-outline-variant hover:bg-surface-container-high'
-                }`}
-              >
-                <span>그룹: {activeFilters.group === 'all' ? '전체' : (groups.find(g => g.id === activeFilters.group)?.name || '기타')}</span>
-                <ChevronDown className="w-4 h-4 shrink-0" />
-              </button>
-
-              {/* Group Dropdown Menu */}
-              {showGroupDropdown && (
-                <div role="listbox" aria-label="검색 그룹 필터" className="absolute left-0 mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl w-40 max-h-64 overflow-y-auto custom-scrollbar py-2 z-50 animate-fade-in-scale">
-                  <button 
-                    type="button"
-                    role="option"
-                    aria-selected={activeFilters.group === 'all'}
-                    onClick={() => toggleGroupFilter('all')}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-on-surface hover:bg-surface transition-colors"
-                  >
-                    전체 그룹
-                  </button>
-                  {groups.map(g => (
-                    <button 
-                      key={g.id}
-                      type="button"
-                      role="option"
-                      aria-selected={activeFilters.group === g.id}
-                      onClick={() => toggleGroupFilter(g.id)}
-                      className="w-full text-left px-4 py-2 text-xs font-semibold text-on-surface hover:bg-surface transition-colors"
-                    >
-                      {g.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Has Image Filter Chip */}
-            <button 
-              onClick={() => setActiveFilters(prev => ({ ...prev, hasImageOnly: !prev.hasImageOnly }))}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all cursor-pointer select-none ${
-                activeFilters.hasImageOnly 
-                  ? 'bg-primary text-white shadow-soft' 
-                  : 'bg-surface border border-outline-variant hover:bg-surface-container-high'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4" />
-              <span>이미지 첨부</span>
-            </button>
-
-            {/* Favorite Filter Chip */}
-            <button 
-              onClick={() => setActiveFilters(prev => ({ ...prev, starredOnly: !prev.starredOnly }))}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all cursor-pointer select-none ${
-                activeFilters.starredOnly 
-                  ? 'bg-primary text-white shadow-soft' 
-                  : 'bg-surface border border-outline-variant hover:bg-surface-container-high'
-              }`}
-            >
-              <Star className="w-4 h-4 fill-current" />
-              <span>즐겨찾기</span>
-            </button>
-
-            <div className="h-6 w-[1px] bg-outline-variant/60 mx-1" />
-
-            {/* Sort Order Chip */}
-            <button 
-              onClick={() => setActiveFilters(prev => ({ ...prev, sortDesc: !prev.sortDesc }))}
-              className="flex items-center gap-1.5 px-4 py-2 bg-surface border border-outline-variant hover:bg-surface-container-high rounded-full font-bold text-xs transition-all cursor-pointer select-none"
-            >
-              <ArrowUpDown className="w-4 h-4 text-primary" />
-              <span>정렬: {activeFilters.sortDesc ? '최신순' : '오래된순'}</span>
-            </button>
           </div>
 
         </div>

@@ -4,7 +4,7 @@ import {
   FileText, 
   Calendar, 
   Star, 
-  Tag, 
+  Search,
   Trash2, 
   FolderPlus, 
   HelpCircle, 
@@ -162,8 +162,8 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <Tag className="w-5 h-5" />
-            <span>태그 및 검색</span>
+            <Search className="w-5 h-5" />
+            <span>검색</span>
           </button>
 
           {/* Group Folder Divider */}

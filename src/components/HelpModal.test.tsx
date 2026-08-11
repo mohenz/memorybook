@@ -8,7 +8,7 @@ describe('HelpModal', () => {
 
     expect(markup).toContain('role="dialog"');
     expect(markup).toContain('aria-labelledby="help-title"');
-    ['메모', '그룹', '캘린더', 'TO-DO LIST', '태그 및 검색', '자료실'].forEach((label) => {
+    ['메모', '그룹', '캘린더', 'TO-DO LIST', '검색', '자료실'].forEach((label) => {
       expect(markup).toContain(label);
     });
     expect(markup).toContain('aria-label="도움말 닫기"');

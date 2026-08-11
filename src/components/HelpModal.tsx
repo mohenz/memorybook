@@ -1,4 +1,4 @@
-import { Archive, Calendar, FileText, Folder, ListTodo, Tag, X } from 'lucide-react';
+import { Archive, Calendar, FileText, Folder, ListTodo, Search, X } from 'lucide-react';
 
 interface HelpModalProps {
   onClose: () => void;
@@ -9,7 +9,7 @@ const HELP_ITEMS = [
   { icon: Folder, title: '그룹', description: '메모 작성·수정 시 그룹을 선택하고 폴더별로 모아볼 수 있습니다.' },
   { icon: Calendar, title: '캘린더', description: '월간·주간·일간 화면에서 일정을 등록하고 시간대별로 확인할 수 있습니다.' },
   { icon: ListTodo, title: 'TO-DO LIST', description: '메모에 등록한 할 일을 예정·진행·완료 상태로 관리할 수 있습니다.' },
-  { icon: Tag, title: '태그 및 검색', description: '검색어와 그룹, 이미지, 즐겨찾기 조건으로 필요한 메모를 찾을 수 있습니다.' },
+  { icon: Search, title: '검색', description: '검색어와 그룹, 이미지, 즐겨찾기 조건으로 필요한 메모를 찾을 수 있습니다.' },
   { icon: Archive, title: '자료실', description: '계정에 연결된 파일을 업로드하고 필요한 자료를 확인할 수 있습니다.' },
 ];
 

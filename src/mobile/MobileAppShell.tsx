@@ -5,10 +5,10 @@ import MobileNoteListScreen from './screens/MobileNoteListScreen';
 import MobileNoteDetailScreen from './screens/MobileNoteDetailScreen';
 import MobileFileListScreen, { ArchiveFile } from './screens/MobileFileListScreen';
 import MobileFilePreviewScreen from './screens/MobileFilePreviewScreen';
-import MobileTrashScreen from './screens/MobileTrashScreen';
 import { ScheduleDraft } from '../components/calendar/ScheduleFormModal';
 import TodoListView from '../components/TodoListView';
 import MobileCalendarScreen from './screens/MobileCalendarScreen';
+import SearchView from '../components/SearchView';
 import { useArchiveFiles } from '../archiveStore/features/archive/useArchiveFiles.js';
 import { useArchiveMutations } from '../archiveStore/features/archive/useArchiveMutations.js';
 import { getTodosForDate } from '../utils/todos';
@@ -38,11 +38,6 @@ interface MobileAppShellProps {
   onUpdateTodo: (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => void;
   onDeleteTodo: (todoId: string) => void;
   onSetTodoStatus: (todoId: string, status: TodoStatus) => void;
-  trashedSchedules?: Schedule[];
-  onRestoreNote?: (noteId: string) => void;
-  onPermanentlyDeleteNote?: (noteId: string) => void;
-  onRestoreSchedule?: (scheduleId: string) => void;
-  onPermanentlyDeleteSchedule?: (scheduleId: string) => void;
   userId: string;
   profileImage: string;
   onOpenSettings: () => void;
@@ -65,11 +60,6 @@ export default function MobileAppShell({
   onUpdateTodo,
   onDeleteTodo,
   onSetTodoStatus,
-  trashedSchedules = [],
-  onRestoreNote = () => undefined,
-  onPermanentlyDeleteNote = () => undefined,
-  onRestoreSchedule = () => undefined,
-  onPermanentlyDeleteSchedule = () => undefined,
   userId,
   profileImage,
   onOpenSettings,
@@ -202,14 +192,15 @@ export default function MobileAppShell({
           <MobileFilePreviewScreen file={selectedFile} onBack={() => setFileView('LIST')} />
         ))}
 
-      {activeTab === 'TRASH' && (
-        <MobileTrashScreen
-          notes={notes.filter(note => note.isDeleted)}
-          schedules={trashedSchedules}
-          onRestoreNote={onRestoreNote}
-          onPermanentlyDeleteNote={onPermanentlyDeleteNote}
-          onRestoreSchedule={onRestoreSchedule}
-          onPermanentlyDeleteSchedule={onPermanentlyDeleteSchedule}
+      {activeTab === 'SEARCH' && (
+        <SearchView
+          notes={notes}
+          groups={groups}
+          onSelectNote={(noteId) => {
+            handleSelectNote(noteId);
+            setActiveTab('NOTES');
+          }}
+          onAddNote={onAddNote}
         />
       )}
 

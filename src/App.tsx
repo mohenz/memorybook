@@ -95,6 +95,7 @@ const SCREEN_TO_MOBILE_TAB: Partial<Record<ScreenType, MobileTab>> = {
   CALENDAR: 'CALENDAR',
   TODOS: 'TODOS',
   ARCHIVE: 'FILES',
+  SEARCH: 'SEARCH',
 };
 
 function getInitialScreen(): ScreenType {
@@ -968,13 +969,6 @@ export default function App() {
               onUpdateTodo={handleUpdateTodo}
               onDeleteTodo={handleDeleteTodo}
               onSetTodoStatus={handleSetTodoStatus}
-              trashedSchedules={trashedSchedules}
-              onRestoreNote={handleRestoreNote}
-              onPermanentlyDeleteNote={handleDeleteNote}
-              onRestoreSchedule={handleRestoreSchedule}
-              onPermanentlyDeleteSchedule={(scheduleId) => {
-                setSchedules(prev => permanentlyDeleteSchedule(prev, scheduleId));
-              }}
               userId={archiveUser.uid}
               profileImage={profileImage}
               onOpenSettings={() => setShowSettingsModal(true)}
