@@ -37,6 +37,7 @@ import SettingsModal from './components/SettingsModal';
 import SchedulePopupModal from './components/SchedulePopupModal';
 import { ArchiveView } from './archiveStore/views/ArchiveView.jsx';
 import MobileAppShell from './mobile/MobileAppShell';
+import { MobileTab } from './mobile/MobileBottomNav';
 import MobileNoteEditorScreen from './mobile/screens/MobileNoteEditorScreen';
 import './archiveStore/styles.css';
 import {
@@ -85,6 +86,15 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   browserPermission: false,
   dailyDigest: { enabled: false, time: '08:00' },
   weeklyDigest: { enabled: false, dayOfWeek: 1, time: '08:00' },
+};
+
+// Mobile has no sidebar, so a screen only stays reachable if it lives inside the
+// tabbed shell that owns the bottom nav. Anything mapped here lands on its tab.
+const SCREEN_TO_MOBILE_TAB: Partial<Record<ScreenType, MobileTab>> = {
+  DASHBOARD: 'NOTES',
+  CALENDAR: 'CALENDAR',
+  TODOS: 'TODOS',
+  ARCHIVE: 'FILES',
 };
 
 function getInitialScreen(): ScreenType {
@@ -937,9 +947,12 @@ export default function App() {
 
         {/* Mobile layout (below 768px) */}
         <div className="flex md:hidden viewport-height min-w-0 w-full max-w-full overflow-hidden bg-background">
-          {/* Kept mounted (hidden via CSS, not unmounted) so tab/detail state survives a round trip to EDITOR */}
-          <div className={screen === 'DASHBOARD' ? 'flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden' : 'hidden'}>
+          {/* Kept mounted (hidden via CSS, not unmounted) so tab/detail state survives a round trip to EDITOR.
+              Shown for every screen the bottom nav can reach — hiding it on CALENDAR would strand the user,
+              since the desktop sidebar is hidden below md and nothing else offers navigation. */}
+          <div className={SCREEN_TO_MOBILE_TAB[screen] ? 'flex-1 flex flex-col min-h-0 min-w-0 max-w-full overflow-hidden' : 'hidden'}>
             <MobileAppShell
+              initialTab={SCREEN_TO_MOBILE_TAB[screen] ?? 'CALENDAR'}
               notes={notes}
               groups={groups}
               schedules={activeSchedules}
@@ -981,7 +994,8 @@ export default function App() {
             />
           )}
 
-          {screen !== 'DASHBOARD' && screen !== 'EDITOR' && (
+          {/* Only screens without a bottom-nav tab (SEARCH) fall through to the shared overlay */}
+          {!SCREEN_TO_MOBILE_TAB[screen] && screen !== 'EDITOR' && (
             <div className="flex-1 flex flex-col min-h-0">
               {renderOverlayScreen()}
             </div>
