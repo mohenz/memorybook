@@ -17,7 +17,7 @@
     "db:migrate": "node scripts/supabase-db.mjs migrate",
     "db:verify": "node scripts/supabase-db.mjs verify",
     "deploy:check": "npm run lint && npm run test:vitest && npm run test:unit && npm run test:e2e && npm run build && node scripts/check-deployment.mjs",
-    "deploy:vercel": "npm run deploy:check && npx vercel --prod"
+    "deploy:vercel": "npm run deploy:check && node scripts/deploy-vercel.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -27,11 +27,19 @@ if (/sb_secret_[A-Za-z0-9_-]{20,}/.test(bundle) || bundle.includes('pooler.supab
   throw new Error('프로덕션 번들에 서버 전용 비밀정보가 포함됐습니다.');
 }
 
+// The post-deploy check identifies the running revision by this marker, so a build
+// without it would leave the deployment unverifiable.
+const buildCommit = indexHtml.match(/<meta[^>]+name="build-commit"[^>]+content="([^"]*)"/)?.[1];
+if (!buildCommit || buildCommit === 'unknown') throw new Error('dist/index.html에 build-commit 마커가 없습니다.');
+
 if (!allowNoGit) {
   if (!fs.existsSync(path.join(root, '.git'))) throw new Error('독립 Git 저장소가 없어 배포를 중단합니다.');
   const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
   if (status.trim()) throw new Error('커밋되지 않은 변경사항이 있어 배포를 중단합니다.');
   execFileSync('git', ['rev-parse', '--abbrev-ref', '@{u}'], { cwd: root, stdio: 'ignore' });
+
+  const headCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  if (buildCommit !== headCommit) throw new Error(`빌드 리비전이 HEAD와 다릅니다: build=${buildCommit}, HEAD=${headCommit}`);
 }
 
-console.log(`Vercel 배포 사전검증 통과: project=${expectedProjectRef}, bundle=${bundlePath}`);
+console.log(`Vercel 배포 사전검증 통과: project=${expectedProjectRef}, bundle=${bundlePath}, commit=${buildCommit}`);
