@@ -1,6 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import AgendaCalendarScreen from './AgendaCalendarScreen';
+import { Schedule } from '../../types';
+
+const buildSchedule = (dateString: string, title: string): Schedule => ({
+  id: `schedule-${dateString}`, title, dateString, allDay: true, priority: 'normal',
+  createdAt: '2026-08-01T00:00:00.000Z', updatedAt: '2026-08-01T00:00:00.000Z',
+});
 
 describe('AgendaCalendarScreen', () => {
   it('groups schedules and todos by date with their requested fields', () => {
@@ -35,5 +41,53 @@ describe('AgendaCalendarScreen', () => {
     expect(markup).toContain('bg-surface-container-high text-primary');
     expect(markup).toContain('회의자료 작성');
     expect(markup).toContain('목표일');
+  });
+
+  it('marks the section for today and exposes a scroll anchor on every day', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 10, 12));
+
+    const markup = renderToStaticMarkup(
+      <AgendaCalendarScreen
+        selectedDate={new Date(2026, 7, 10, 12)}
+        schedulesByDate={new Map([
+          ['2026-08-03', [buildSchedule('2026-08-03', '지난 회의')]],
+          ['2026-08-10', [buildSchedule('2026-08-10', '오늘 회의')]],
+        ])}
+        todos={[]}
+        searchQuery=""
+        onSelectSchedule={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('data-agenda-date="2026-08-03"');
+    expect(markup).toContain('data-agenda-date="2026-08-10"');
+    expect(markup).toContain('aria-current="date"');
+    expect(markup.match(/aria-current="date"/g)).toHaveLength(1);
+    expect(markup).toContain('>오늘<');
+    expect(markup).toContain('border-primary ring-2 ring-primary/30');
+
+    vi.useRealTimers();
+  });
+
+  it('does not mark any section when today falls outside the shown month', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 2, 12));
+
+    const markup = renderToStaticMarkup(
+      <AgendaCalendarScreen
+        selectedDate={new Date(2026, 7, 10, 12)}
+        schedulesByDate={new Map([['2026-08-10', [buildSchedule('2026-08-10', '지난달 회의')]]])}
+        todos={[]}
+        searchQuery=""
+        onSelectSchedule={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('지난달 회의');
+    expect(markup).not.toContain('aria-current="date"');
+    expect(markup).not.toContain('>오늘<');
+
+    vi.useRealTimers();
   });
 });

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { CalendarDays, CheckSquare2 } from 'lucide-react';
 import { Schedule, TodoItem } from '../../types';
 import { toLocalDateString } from '../../utils/date';
@@ -34,6 +35,22 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
     todos: filteredTodos.filter(todo => todo.createdDateString === dateString || todo.targetDateString === dateString),
   })).filter(day => day.schedules.length || day.todos.length);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const todayString = toLocalDateString(new Date());
+  // Land on today, or the next day that actually has entries. Past months resolve to
+  // nothing and stay at the top, which is where their content begins anyway.
+  const focusDateString = days.find(day => day.dateString >= todayString)?.dateString;
+  const monthKey = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}`;
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !focusDateString) return;
+    const target = container.querySelector<HTMLElement>(`[data-agenda-date="${focusDateString}"]`);
+    if (!target) return;
+    const offset = target.getBoundingClientRect().top - container.getBoundingClientRect().top;
+    container.scrollTop = Math.max(container.scrollTop + offset - 12, 0);
+  }, [focusDateString, monthKey]);
+
   if (!days.length) {
     return (
       <div className="flex h-full items-center justify-center p-8 text-center">
@@ -46,12 +63,24 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
   }
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar px-4 py-5 md:px-8">
+    <div ref={scrollRef} className="h-full overflow-y-auto custom-scrollbar px-4 py-5 md:px-8">
       <div className="mx-auto max-w-5xl space-y-4">
-        {days.map(day => (
-          <section key={day.dateString} className="overflow-hidden rounded-2xl border border-outline-variant/60 bg-surface-container-lowest shadow-soft">
-            <header className="flex items-center justify-between border-b border-grid-line bg-surface-container-low px-4 py-3">
-              <h2 className="text-sm font-extrabold text-on-surface">{formatDateHeading(day.dateString)}</h2>
+        {days.map(day => {
+          const isToday = day.dateString === todayString;
+          return (
+          <section
+            key={day.dateString}
+            data-agenda-date={day.dateString}
+            aria-current={isToday ? 'date' : undefined}
+            className={`overflow-hidden rounded-2xl border bg-surface-container-lowest shadow-soft ${
+              isToday ? 'border-primary ring-2 ring-primary/30' : 'border-outline-variant/60'
+            }`}
+          >
+            <header className={`flex items-center justify-between border-b border-grid-line px-4 py-3 ${isToday ? 'bg-primary/10' : 'bg-surface-container-low'}`}>
+              <h2 className={`flex items-center gap-2 text-sm font-extrabold ${isToday ? 'text-primary' : 'text-on-surface'}`}>
+                {formatDateHeading(day.dateString)}
+                {isToday && <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-extrabold text-white">오늘</span>}
+              </h2>
               <span className="text-[10px] font-bold text-outline">일정 {day.schedules.length} · 할 일 {day.todos.length}</span>
             </header>
 
@@ -90,7 +119,8 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
               })}
             </div>
           </section>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
