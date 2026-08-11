@@ -10,6 +10,8 @@ function git(...args) {
 }
 
 const commit = git('rev-parse', 'HEAD');
+// The SHA is interpolated into a shell command below; refuse anything that is not one.
+if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error(`예상치 못한 커밋 형식입니다: ${commit}`);
 
 // A dirty tree would ship code that no commit describes, defeating the marker the
 // post-deploy check compares against.
@@ -22,10 +24,16 @@ if (dirty && process.env.ALLOW_DIRTY_DEPLOY !== '1') {
 
 console.log(`Vercel 프로덕션 배포를 시작합니다: commit=${commit}`);
 
+// Node refuses to spawn the npx .cmd shim directly on Windows, so this goes through a
+// shell. It is passed as one command string because args + shell is deprecated in Node 25.
 const result = spawnSync(
-  process.platform === 'win32' ? 'npx.cmd' : 'npx',
-  ['vercel', '--prod', '--yes', '--build-env', `VITE_BUILD_COMMIT=${commit}`],
-  { cwd: projectRoot, stdio: 'inherit', windowsHide: true },
+  `npx vercel --prod --yes --build-env VITE_BUILD_COMMIT=${commit}`,
+  { cwd: projectRoot, stdio: 'inherit', shell: true, windowsHide: true },
 );
+
+if (result.error) {
+  console.error(`Vercel CLI 실행에 실패했습니다: ${result.error.message}`);
+  process.exit(1);
+}
 
 process.exitCode = result.status ?? 1;
