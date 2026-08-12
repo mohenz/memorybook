@@ -97,8 +97,8 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
                     종일
                   </span>
                   <span className="min-w-0 truncate text-sm font-semibold text-on-surface">
+                    {!schedule.allDay && <span className="mr-2 text-[11px] font-medium text-outline">{schedule.startTime}–{schedule.endTime}</span>}
                     {schedule.title}
-                    {!schedule.allDay && <span className="ml-2 text-[11px] font-medium text-outline">{schedule.startTime}–{schedule.endTime}</span>}
                   </span>
                 </button>
               ))}
