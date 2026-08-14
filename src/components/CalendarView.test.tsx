@@ -192,16 +192,16 @@ describe('CalendarView toolbar layout', () => {
     const markup = renderCalendar(new Date(2026, 6, 23, 12));
 
     expect(markup.indexOf('캘린더 보기 방식')).toBeLessThan(markup.indexOf('캘린더 일정 검색'));
-    expect(markup).toContain('<select aria-label="캘린더 보기 방식"');
-    expect(markup).toContain('<option value="week">주간</option>');
-    expect(markup).toContain('<option value="day">일간</option>');
-    expect(markup).toContain('<option value="month" selected="">월간</option>');
-    expect(markup).toContain('<option value="year">연간</option>');
-    expect(markup).toContain('<option value="agenda">일정</option>');
-    expect(markup.indexOf('value="week"')).toBeLessThan(markup.indexOf('value="day"'));
-    expect(markup.indexOf('value="day"')).toBeLessThan(markup.indexOf('value="month"'));
-    expect(markup.indexOf('value="month"')).toBeLessThan(markup.indexOf('value="year"'));
-    expect(markup.indexOf('value="year"')).toBeLessThan(markup.indexOf('value="agenda"'));
+    expect(markup).toContain('role="group" aria-label="캘린더 보기 방식"');
+    expect(markup).toContain('>일</button>');
+    expect(markup).toContain('>주</button>');
+    expect(markup).toContain('>월</button>');
+    expect(markup).toContain('>년</button>');
+    expect(markup).toContain('aria-label="일정 목록"');
+    expect(markup.indexOf('>일</button>')).toBeLessThan(markup.indexOf('>주</button>'));
+    expect(markup.indexOf('>주</button>')).toBeLessThan(markup.indexOf('>월</button>'));
+    expect(markup.indexOf('>월</button>')).toBeLessThan(markup.indexOf('>년</button>'));
+    expect(markup.indexOf('>년</button>')).toBeLessThan(markup.indexOf('aria-label="일정 목록"'));
 
     vi.useRealTimers();
   });

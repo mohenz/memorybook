@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarPlus, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { CalendarPlus, ChevronLeft, ChevronRight, List, Search } from 'lucide-react';
 import { Group, Note, Schedule, TodoItem } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { koreanHolidays } from '../features/holidays/koreanHolidays.generated';
@@ -43,12 +43,11 @@ interface CalendarViewProps {
   onDeleteSchedule: (scheduleId: string) => void;
 }
 
-const VIEW_OPTIONS: Array<{ value: CalendarViewMode; label: string }> = [
-  { value: 'week', label: '주간' },
-  { value: 'day', label: '일간' },
-  { value: 'month', label: '월간' },
-  { value: 'year', label: '연간' },
-  { value: 'agenda', label: '일정' },
+const VIEW_OPTIONS: Array<{ value: Exclude<CalendarViewMode, 'agenda'>; label: string }> = [
+  { value: 'day', label: '일' },
+  { value: 'week', label: '주' },
+  { value: 'month', label: '월' },
+  { value: 'year', label: '년' },
 ];
 
 const MOVE_LABEL: Record<CalendarViewMode, string> = {
@@ -152,19 +151,36 @@ export default function CalendarView({
             </div>
         </div>
 
-          <label className="relative shrink-0">
-            <span className="sr-only">캘린더 보기 방식</span>
-            <select
-              aria-label="캘린더 보기 방식"
-              value={viewMode}
-              onChange={(event) => setViewMode(event.target.value as CalendarViewMode)}
-              className="h-8 w-24 cursor-pointer rounded-xl border border-outline-variant bg-surface-container px-3 !text-xs font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+          <div role="group" aria-label="캘린더 보기 방식" className="flex shrink-0 items-center gap-1">
+            {VIEW_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setViewMode(option.value)}
+                aria-pressed={viewMode === option.value}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  viewMode === option.value
+                    ? 'bg-primary text-white shadow-soft hover:brightness-110'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-dim'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setViewMode('agenda')}
+              aria-label="일정 목록"
+              aria-pressed={viewMode === 'agenda'}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all active:scale-95 cursor-pointer ${
+                viewMode === 'agenda'
+                  ? 'bg-primary text-white shadow-soft hover:brightness-110'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-dim'
+              }`}
             >
-              {VIEW_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
+              <List className="h-3.5 w-3.5" />
+            </button>
+          </div>
 
           <div className="relative w-48 shrink-0">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-outline" />
