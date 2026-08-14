@@ -1,3 +1,4 @@
+import type { AuthChangeEvent } from '@supabase/supabase-js';
 import { Group, Note, NotificationSettings, Schedule, TodoItem } from '../types';
 import { isSupabaseConfigured, supabase } from '../supabase/client';
 
@@ -20,6 +21,15 @@ export interface ArchiveAccount {
   email: string | null;
 }
 
+export function shouldEmitArchiveAccountChange(
+  event: AuthChangeEvent,
+  previousUserId: string | null | undefined,
+  nextUserId: string | null,
+) {
+  if (event === 'TOKEN_REFRESHED') return false;
+  return previousUserId === undefined || previousUserId !== nextUserId;
+}
+
 function requireSupabase() {
   if (!supabase) throw new Error('Supabase 설정이 없습니다.');
   return supabase;
@@ -31,8 +41,13 @@ export function subscribeArchiveAccount(onUser: (user: ArchiveAccount | null) =>
     return () => undefined;
   }
 
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+  let emittedUserId: string | null | undefined;
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
     const user = session?.user;
+    const nextUserId = user?.id || null;
+    if (!shouldEmitArchiveAccountChange(event, emittedUserId, nextUserId)) return;
+
+    emittedUserId = nextUserId;
     onUser(user ? { uid: user.id, email: user.email || null } : null);
   });
   return () => data.subscription.unsubscribe();
