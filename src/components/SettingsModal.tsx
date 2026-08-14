@@ -587,7 +587,7 @@ export default function SettingsModal({
         {/* Modal Footer */}
         <footer className="px-6 py-4 bg-surface-container-low dark:bg-surface-container-lowest border-t border-grid-line dark:border-outline/10 flex justify-end shrink-0">
           <button
-            onClick={onClose}
+            type="button"
             className="px-5 py-2.5 bg-primary text-white rounded-full text-sm font-bold hover:brightness-110 active:scale-95 transition-all shadow-soft cursor-pointer"
           >
             확인 및 저장

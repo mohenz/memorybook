@@ -41,6 +41,11 @@ describe('SettingsModal folder tab', () => {
     expect(markup).toContain('h-[720px] max-h-[calc(100dvh-2rem)]');
   });
 
+  it('renders the confirm and save button without a closing action', () => {
+    const markup = renderModal();
+    expect(markup).toMatch(/<button type="button"[^>]*>확인 및 저장<\/button>/);
+  });
+
   it('renders the folder name management tab entry point', () => {
     const markup = renderModal();
     expect(markup).toContain('폴더 이름 관리');
