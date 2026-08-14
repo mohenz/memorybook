@@ -72,4 +72,49 @@ describe('NoteDetail desktop actions', () => {
     expect(markup).toContain('확인하기 수정');
     expect(markup).toContain('확인하기 삭제');
   });
+
+  const renderNote = (overrides: Partial<Note> = {}) => renderToStaticMarkup(
+    <NoteDetail
+      note={{ ...note, ...overrides }}
+      groups={[]}
+      todos={[]}
+      onEdit={() => undefined}
+      onDelete={() => undefined}
+      onRestore={() => undefined}
+      onToggleFavorite={() => undefined}
+      onUpdateTodo={() => undefined}
+      onDeleteTodo={() => undefined}
+      onSetTodoStatus={() => undefined}
+    />
+  );
+
+  it('places the fullscreen action between the favorite and edit actions', () => {
+    const markup = renderNote();
+
+    expect(markup).toContain('title="전체화면으로 보기"');
+
+    const favorite = markup.indexOf('중요 메모 추가');
+    const fullscreen = markup.indexOf('전체화면으로 보기');
+    const edit = markup.indexOf('수정하기');
+
+    expect(favorite).toBeGreaterThan(-1);
+    expect(fullscreen).toBeGreaterThan(favorite);
+    expect(edit).toBeGreaterThan(fullscreen);
+  });
+
+  it('starts collapsed so the fullscreen overlay is absent until requested', () => {
+    const markup = renderNote();
+
+    expect(markup).not.toContain('전체화면 나가기');
+    expect(markup).not.toContain('z-[250]');
+    // Toolbar visible, so the reading canvas renders inline rather than in the overlay.
+    expect(markup).toContain('items-center gap-2 z-20 flex');
+  });
+
+  it('offers restore instead of the fullscreen action for a trashed note', () => {
+    const markup = renderNote({ isDeleted: true });
+
+    expect(markup).toContain('title="메모 복원"');
+    expect(markup).not.toContain('title="전체화면으로 보기"');
+  });
 });
