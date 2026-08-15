@@ -70,6 +70,27 @@ describe('AgendaCalendarScreen', () => {
     vi.useRealTimers();
   });
 
+  it('highlights high-priority schedules with the error color', () => {
+    const highPrioritySchedule = {
+      ...buildSchedule('2026-08-10', '중요 고객 미팅'),
+      priority: 'high' as const,
+    };
+    const markup = renderToStaticMarkup(
+      <AgendaCalendarScreen
+        selectedDate={new Date(2026, 7, 10, 12)}
+        schedulesByDate={new Map([['2026-08-10', [highPrioritySchedule]]])}
+        todos={[]}
+        searchQuery=""
+        onSelectSchedule={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('data-schedule-priority="high"');
+    expect(markup).toContain('border-l-4 border-error bg-error/10');
+    expect(markup).toContain('text-error');
+    expect(markup).toContain('중요 고객 미팅');
+  });
+
   it('does not mark any section when today falls outside the shown month', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 8, 2, 12));

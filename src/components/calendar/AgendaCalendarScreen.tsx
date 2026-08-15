@@ -3,6 +3,7 @@ import { CalendarDays, CheckSquare2 } from 'lucide-react';
 import { Schedule, TodoItem } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 import { TODO_STATUS_LABELS } from '../../utils/todoStatus';
+import { PRIORITY_COLORS } from './scheduleUtils';
 
 interface AgendaCalendarScreenProps {
   selectedDate: Date;
@@ -85,23 +86,35 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
             </header>
 
             <div className="divide-y divide-grid-line/70">
-              {day.schedules.map(schedule => (
-                <button
-                  key={`${schedule.id}-${day.dateString}`}
-                  type="button"
-                  onClick={() => onSelectSchedule(schedule)}
-                  className="grid w-full grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-container-low cursor-pointer"
-                >
-                  <span className="text-[11px] font-bold tabular-nums text-on-surface-variant">{day.dateString}</span>
-                  <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${schedule.allDay ? 'bg-primary/10 text-primary' : NEUTRAL_BADGE_CLASS}`}>
-                    종일
-                  </span>
-                  <span className="min-w-0 truncate text-sm font-semibold text-on-surface">
-                    {!schedule.allDay && <span className="mr-2 text-[11px] font-medium text-outline">{schedule.startTime}–{schedule.endTime}</span>}
-                    {schedule.title}
-                  </span>
-                </button>
-              ))}
+              {day.schedules.map(schedule => {
+                const isHighPriority = schedule.priority === 'high';
+                return (
+                  <button
+                    key={`${schedule.id}-${day.dateString}`}
+                    type="button"
+                    data-schedule-priority={schedule.priority}
+                    onClick={() => onSelectSchedule(schedule)}
+                    className={`grid w-full grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition-all cursor-pointer ${
+                      isHighPriority
+                        ? `border-l-4 ${PRIORITY_COLORS.high.border} ${PRIORITY_COLORS.high.bg} hover:brightness-95`
+                        : 'hover:bg-surface-container-low'
+                    }`}
+                  >
+                    <span className={`text-[11px] font-bold tabular-nums ${isHighPriority ? PRIORITY_COLORS.high.text : 'text-on-surface-variant'}`}>{day.dateString}</span>
+                    <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${
+                      isHighPriority
+                        ? `${PRIORITY_COLORS.high.bg} ${PRIORITY_COLORS.high.text}`
+                        : schedule.allDay ? 'bg-primary/10 text-primary' : NEUTRAL_BADGE_CLASS
+                    }`}>
+                      종일
+                    </span>
+                    <span className={`min-w-0 truncate text-sm font-semibold ${isHighPriority ? PRIORITY_COLORS.high.text : 'text-on-surface'}`}>
+                      {!schedule.allDay && <span className={`mr-2 text-[11px] font-medium ${isHighPriority ? PRIORITY_COLORS.high.text : 'text-outline'}`}>{schedule.startTime}–{schedule.endTime}</span>}
+                      {schedule.title}
+                    </span>
+                  </button>
+                );
+              })}
 
               {day.todos.map(todo => {
                 const relation = todo.createdDateString === day.dateString && todo.targetDateString === day.dateString
