@@ -746,6 +746,7 @@ export default function App() {
             profileImage={profileImage}
             onOpenArchive={() => setScreen('ARCHIVE')}
             onOpenSettings={() => setShowSettingsModal(true)}
+            onLogout={logoutArchiveAccount}
           />
 
           {/* Right Screens dynamic layout */}

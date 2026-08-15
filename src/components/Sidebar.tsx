@@ -14,7 +14,8 @@ import {
   Compass, 
   Folder,
   Plus,
-  ListTodo
+  ListTodo,
+  LogOut
 } from 'lucide-react';
 import { Group, ScreenType } from '../types';
 import HelpModal from './HelpModal';
@@ -30,6 +31,47 @@ interface SidebarProps {
   profileImage: string;
   onOpenArchive: () => void;
   onOpenSettings: () => void;
+  onLogout: () => Promise<void>;
+}
+
+interface LogoutConfirmDialogProps {
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+export function LogoutConfirmDialog({ onCancel, onConfirm }: LogoutConfirmDialogProps) {
+  return (
+    <div
+      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs"
+      onClick={onCancel}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-confirm-title"
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 text-on-surface shadow-2xl"
+      >
+        <h2 id="logout-confirm-title" className="text-lg font-bold">로그아웃하겠습니까?</h2>
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-soft hover:brightness-110"
+          >
+            확인
+          </button>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default function Sidebar({
@@ -42,10 +84,12 @@ export default function Sidebar({
   totalNotesCount,
   profileImage,
   onOpenArchive,
-  onOpenSettings
+  onOpenSettings,
+  onLogout
 }: SidebarProps) {
   const [showAddFolderModal, setShowAddFolderModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
   const handleCreateFolder = (e: React.FormEvent) => {
@@ -232,36 +276,51 @@ export default function Sidebar({
 
       {/* Sidebar Footer */}
       <div className="hidden lg:flex mt-auto shrink-0 p-3 border-t border-outline-variant/30 flex-col gap-1 bg-surface-container-low">
-        <button 
-          onClick={() => setShowAddFolderModal(true)}
-          className="w-full flex items-center justify-center gap-2 py-1.5 px-4 rounded-xl border border-dashed border-outline text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface hover:border-primary transition-all active:scale-95 text-sm font-semibold cursor-pointer"
-        >
-          <FolderPlus className="w-4.5 h-4.5 text-primary" />
-          <span>새 폴더 추가</span>
-        </button>
-        
-        <div className="flex items-center justify-between px-2 pt-2 text-xs text-outline font-semibold">
-          <button 
+        <div className="flex items-center justify-between px-2 text-xs text-outline font-semibold">
+          <button
+            type="button"
             onClick={() => setShowHelpModal(true)}
-            className="flex items-center gap-1.5 py-1 px-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant"
+            aria-label="도움말"
+            title="도움말"
+            className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant"
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>도움말</span>
-          </button>
-          
-          <button 
-            onClick={onOpenSettings}
-            className="flex items-center gap-1.5 py-1 px-1.5 hover:bg-surface-container-high rounded-lg text-primary"
-            title="설정 및 테마 변경"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span>설정</span>
           </button>
 
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              aria-label="설정"
+              title="설정 및 테마 변경"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              aria-label="로그아웃"
+              title="로그아웃"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant hover:text-error"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
+
+      {showLogoutConfirm && (
+        <LogoutConfirmDialog
+          onCancel={() => setShowLogoutConfirm(false)}
+          onConfirm={() => {
+            setShowLogoutConfirm(false);
+            void onLogout();
+          }}
+        />
+      )}
 
       {/* Add Folder Modal Popover */}
       {showAddFolderModal && (
