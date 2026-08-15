@@ -94,18 +94,10 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
                     type="button"
                     data-schedule-priority={schedule.priority}
                     onClick={() => onSelectSchedule(schedule)}
-                    className={`grid w-full grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition-all cursor-pointer ${
-                      isHighPriority
-                        ? `border-l-4 ${PRIORITY_COLORS.high.border} ${PRIORITY_COLORS.high.bg} hover:brightness-95`
-                        : 'hover:bg-surface-container-low'
-                    }`}
+                    className="grid w-full grid-cols-[70px_72px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-container-low cursor-pointer"
                   >
-                    <span className={`text-[11px] font-bold tabular-nums ${isHighPriority ? PRIORITY_COLORS.high.text : 'text-on-surface-variant'}`}>{day.dateString}</span>
-                    <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${
-                      isHighPriority
-                        ? `${PRIORITY_COLORS.high.bg} ${PRIORITY_COLORS.high.text}`
-                        : schedule.allDay ? 'bg-primary/10 text-primary' : NEUTRAL_BADGE_CLASS
-                    }`}>
+                    <span className="text-[11px] font-bold tabular-nums text-on-surface-variant">{day.dateString}</span>
+                    <span className={`rounded-lg px-2 py-1 text-center text-[10px] font-extrabold ${schedule.allDay ? 'bg-primary/10 text-primary' : NEUTRAL_BADGE_CLASS}`}>
                       종일
                     </span>
                     <span className={`min-w-0 truncate text-sm font-semibold ${isHighPriority ? PRIORITY_COLORS.high.text : 'text-on-surface'}`}>

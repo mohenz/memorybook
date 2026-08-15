@@ -70,9 +70,12 @@ describe('AgendaCalendarScreen', () => {
     vi.useRealTimers();
   });
 
-  it('highlights high-priority schedules with the error color', () => {
+  it('highlights only the title and time of high-priority schedules', () => {
     const highPrioritySchedule = {
       ...buildSchedule('2026-08-10', '중요 고객 미팅'),
+      allDay: false,
+      startTime: '15:00',
+      endTime: '16:00',
       priority: 'high' as const,
     };
     const markup = renderToStaticMarkup(
@@ -86,9 +89,9 @@ describe('AgendaCalendarScreen', () => {
     );
 
     expect(markup).toContain('data-schedule-priority="high"');
-    expect(markup).toContain('border-l-4 border-error bg-error/10');
-    expect(markup).toContain('text-error');
-    expect(markup).toContain('중요 고객 미팅');
+    expect(markup).toMatch(/<span class="min-w-0 truncate text-sm font-semibold text-error"><span class="mr-2 text-\[11px\] font-medium text-error">15:00–16:00<\/span>중요 고객 미팅<\/span>/);
+    expect(markup).not.toContain('border-error');
+    expect(markup).not.toContain('bg-error/10');
   });
 
   it('does not mark any section when today falls outside the shown month', () => {
