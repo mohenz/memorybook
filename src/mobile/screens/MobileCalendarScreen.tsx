@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, Sun } from 'lucide-react';
 import { Schedule } from '../../types';
 import { toLocalDateString } from '../../utils/date';
@@ -86,6 +86,13 @@ export default function MobileCalendarScreen({
     [schedules],
   );
   const todayString = toLocalDateString(new Date());
+  const todayItemRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (viewMode === 'all') {
+      todayItemRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [viewMode]);
 
   const saveSchedule = (draft: ScheduleDraft) => {
     if (scheduleModal) onUpdateSchedule(scheduleModal.id, draft);
@@ -219,14 +226,21 @@ export default function MobileCalendarScreen({
             <ul className="space-y-2">
               {allSchedulesSorted.map((schedule) => {
                 const color = PRIORITY_COLORS[schedule.priority];
+                const isToday = schedule.dateString === todayString;
                 return (
                   <li key={schedule.id}>
                     <button
+                      ref={isToday ? todayItemRef : undefined}
                       type="button"
                       onClick={() => setScheduleModal(schedule)}
-                      className={`w-full rounded-2xl border-l-4 ${color.border} bg-surface-container-lowest p-4 text-left shadow-soft`}
+                      className={`w-full rounded-2xl border-l-4 ${color.border} bg-surface-container-lowest p-4 text-left shadow-soft ${
+                        isToday ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
+                      }`}
                     >
-                      <span className={`block text-xs font-bold ${color.text}`}>
+                      <span className={`flex items-center gap-1.5 text-xs font-bold ${color.text}`}>
+                        {isToday && (
+                          <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white">오늘</span>
+                        )}
                         {schedule.dateString} · {scheduleTime(schedule)}
                       </span>
                       <span className="mt-1 block text-sm font-bold text-on-surface">{schedule.title}</span>
