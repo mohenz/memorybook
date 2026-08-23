@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, Sun } from 'lucide-react';
 import { Schedule } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 import ScheduleFormModal, { ScheduleDraft } from '../../components/calendar/ScheduleFormModal';
 import { PRIORITY_COLORS, groupSchedulesByDate } from '../../components/calendar/scheduleUtils';
 
 interface MobileCalendarScreenProps {
-  initialViewMode?: 'day' | 'week';
+  initialViewMode?: 'day' | 'week' | 'all';
   schedules: Schedule[];
   profileImage: string;
   onOpenSettings: () => void;
@@ -64,7 +64,7 @@ export default function MobileCalendarScreen({
   onDeleteSchedule,
 }: MobileCalendarScreenProps) {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<'day' | 'week'>(initialViewMode);
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'all'>(initialViewMode);
   const [scheduleModal, setScheduleModal] = useState<Schedule | null | undefined>(undefined);
   const dates = useMemo(
     () => viewMode === 'week' ? getWeekDates(selectedDate) : [-1, 0, 1].map((offset) => addDays(selectedDate, offset)),
@@ -77,6 +77,14 @@ export default function MobileCalendarScreen({
   );
   const selectedDateString = toLocalDateString(selectedDate);
   const selectedSchedules = schedulesByDate.get(selectedDateString) || [];
+  const allSchedulesSorted = useMemo(
+    () => [...schedules].sort((a, b) =>
+      a.dateString === b.dateString
+        ? (a.startTime || '00:00').localeCompare(b.startTime || '00:00')
+        : a.dateString.localeCompare(b.dateString)
+    ),
+    [schedules],
+  );
   const todayString = toLocalDateString(new Date());
 
   const saveSchedule = (draft: ScheduleDraft) => {
@@ -98,92 +106,140 @@ export default function MobileCalendarScreen({
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold text-on-surface-variant">
-            {viewMode === 'week' ? '주간 일정' : '당일 일정'}
+            {viewMode === 'week' ? '주간 일정' : viewMode === 'all' ? '전체 일정' : '당일 일정'}
           </p>
-          <h1 className="truncate !text-base font-bold text-on-surface">{formatFullDate(selectedDate)}</h1>
+          <h1 className="truncate !text-base font-bold text-on-surface">
+            {viewMode === 'all' ? '모든 일정' : formatFullDate(selectedDate)}
+          </h1>
         </div>
         <div className="flex shrink-0 items-center rounded-xl bg-surface-container p-0.5" aria-label="모바일 캘린더 보기">
           <button
             type="button"
             aria-pressed={viewMode === 'day'}
+            aria-label="오늘"
             onClick={() => {
               setSelectedDate(new Date());
               setViewMode('day');
             }}
-            className={`h-8 rounded-lg px-2.5 text-xs font-bold ${viewMode === 'day' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${viewMode === 'day' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
           >
-            오늘
+            <Sun className="h-4 w-4" />
           </button>
           <button
             type="button"
             aria-pressed={viewMode === 'week'}
+            aria-label="주간"
             onClick={() => setViewMode('week')}
-            className={`h-8 rounded-lg px-2.5 text-xs font-bold ${viewMode === 'week' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${viewMode === 'week' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
           >
-            주간
+            <CalendarRange className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === 'all'}
+            aria-label="전체"
+            onClick={() => setViewMode('all')}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${viewMode === 'all' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+          >
+            <List className="h-4 w-4" />
           </button>
         </div>
       </header>
 
-      <div className="flex items-center justify-between px-4 pb-2 pt-3">
-        <button
-          type="button"
-          aria-label={viewMode === 'week' ? '이전 주' : '이전 날짜'}
-          onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? -7 : -1))}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
+      {viewMode !== 'all' && (
+        <div className="flex items-center justify-between px-4 pb-2 pt-3">
+          <button
+            type="button"
+            aria-label={viewMode === 'week' ? '이전 주' : '이전 날짜'}
+            onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? -7 : -1))}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <p className="text-sm font-bold text-on-surface">
+            {viewMode === 'week' ? formatWeekRange(dates) : `${formatDate(selectedDate)} 일정`}
+          </p>
+          <button
+            type="button"
+            aria-label={viewMode === 'week' ? '다음 주' : '다음 날짜'}
+            onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? 7 : 1))}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      {viewMode !== 'all' && (
+        <div
+          className={viewMode === 'week' ? 'no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3' : 'grid grid-cols-3 gap-2 px-3 pb-3'}
+          aria-label={viewMode === 'week' ? '주간 일정 카드' : '전날 오늘 다음날 일정 카드'}
         >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <p className="text-sm font-bold text-on-surface">
-          {viewMode === 'week' ? formatWeekRange(dates) : `${formatDate(selectedDate)} 일정`}
-        </p>
-        <button
-          type="button"
-          aria-label={viewMode === 'week' ? '다음 주' : '다음 날짜'}
-          onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? 7 : 1))}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      </div>
+          {dates.map((date, index) => {
+            const dateString = dateStrings[index];
+            const daySchedules = schedulesByDate.get(dateString) || [];
+            const isSelected = dateString === selectedDateString;
+            const label = viewMode === 'week'
+              ? new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(date)
+              : index === 0 ? '전날' : index === 2 ? '다음날' : dateString === todayString ? '오늘' : '선택일';
 
-      <div
-        className={viewMode === 'week' ? 'no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3' : 'grid grid-cols-3 gap-2 px-3 pb-3'}
-        aria-label={viewMode === 'week' ? '주간 일정 카드' : '전날 오늘 다음날 일정 카드'}
-      >
-        {dates.map((date, index) => {
-          const dateString = dateStrings[index];
-          const daySchedules = schedulesByDate.get(dateString) || [];
-          const isSelected = dateString === selectedDateString;
-          const label = viewMode === 'week'
-            ? new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(date)
-            : index === 0 ? '전날' : index === 2 ? '다음날' : dateString === todayString ? '오늘' : '선택일';
+            return (
+              <button
+                key={dateString}
+                type="button"
+                onClick={() => setSelectedDate(date)}
+                className={`${viewMode === 'week' ? 'w-[84px] shrink-0' : 'min-w-0'} rounded-2xl border p-3 text-left shadow-soft transition-colors ${
+                  isSelected
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-outline-variant bg-surface-container-lowest text-on-surface'
+                }`}
+                aria-current={isSelected ? 'date' : undefined}
+              >
+                <span className="block text-[10px] font-bold opacity-70">{label}</span>
+                <span className="mt-0.5 block truncate text-xs font-bold">{formatDate(date)}</span>
+                <span className="mt-2 block text-[11px] font-semibold">일정 {daySchedules.length}개</span>
+                <span className="mt-0.5 block truncate text-[10px] opacity-70">
+                  {daySchedules[0]?.title || '등록된 일정 없음'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-          return (
-            <button
-              key={dateString}
-              type="button"
-              onClick={() => setSelectedDate(date)}
-              className={`${viewMode === 'week' ? 'w-[84px] shrink-0' : 'min-w-0'} rounded-2xl border p-3 text-left shadow-soft transition-colors ${
-                isSelected
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-outline-variant bg-surface-container-lowest text-on-surface'
-              }`}
-              aria-current={isSelected ? 'date' : undefined}
-            >
-              <span className="block text-[10px] font-bold opacity-70">{label}</span>
-              <span className="mt-0.5 block truncate text-xs font-bold">{formatDate(date)}</span>
-              <span className="mt-2 block text-[11px] font-semibold">일정 {daySchedules.length}개</span>
-              <span className="mt-0.5 block truncate text-[10px] opacity-70">
-                {daySchedules[0]?.title || '등록된 일정 없음'}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-20">
-        {selectedSchedules.length === 0 ? (
+      <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-20 pt-3">
+        {viewMode === 'all' ? (
+          allSchedulesSorted.length === 0 ? (
+            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant text-center text-on-surface-variant">
+              <CalendarDays className="mb-3 h-8 w-8 text-outline" />
+              <p className="text-sm font-bold">등록된 일정이 없습니다</p>
+              <p className="mt-1 text-xs text-outline">우측 하단 버튼으로 일정을 추가하세요.</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {allSchedulesSorted.map((schedule) => {
+                const color = PRIORITY_COLORS[schedule.priority];
+                return (
+                  <li key={schedule.id}>
+                    <button
+                      type="button"
+                      onClick={() => setScheduleModal(schedule)}
+                      className={`w-full rounded-2xl border-l-4 ${color.border} bg-surface-container-lowest p-4 text-left shadow-soft`}
+                    >
+                      <span className={`block text-xs font-bold ${color.text}`}>
+                        {schedule.dateString} · {scheduleTime(schedule)}
+                      </span>
+                      <span className="mt-1 block text-sm font-bold text-on-surface">{schedule.title}</span>
+                      {schedule.memo && (
+                        <span className="mt-1 block truncate text-xs text-on-surface-variant">{schedule.memo}</span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : selectedSchedules.length === 0 ? (
           <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant text-center text-on-surface-variant">
             <CalendarDays className="mb-3 h-8 w-8 text-outline" />
             <p className="text-sm font-bold">등록된 일정이 없습니다</p>
