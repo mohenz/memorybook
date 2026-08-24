@@ -122,6 +122,7 @@ export default function App() {
   const [loginStatus, setLoginStatus] = useState('');
   const [resetMode, setResetMode] = useState(false);
   const [cloudReady, setCloudReady] = useState(false);
+  const [cloudLoadError, setCloudLoadError] = useState(false);
   const saveTimerRef = useRef<number | null>(null);
 
   // Capture PWA installation prompt
@@ -169,6 +170,7 @@ export default function App() {
     return subscribeArchiveAccount(async (user) => {
       setArchiveUser(user ? { uid: user.uid, email: user.email } : null);
       setCloudReady(false);
+      setCloudLoadError(false);
       setAuthLoading(true);
 
       if (!user) {
@@ -197,10 +199,14 @@ export default function App() {
         setProfileImage(typeof cloudState?.profileImage === 'string' ? cloudState.profileImage : PREMIUM_IMAGES.userProfile);
         setDarkMode(typeof cloudState?.darkMode === 'boolean' ? cloudState.darkMode : false);
         setArchiveStatus('자료실 계정과 동기화되었습니다.');
-      } catch (error) {
-        setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다.');
-      } finally {
         setCloudReady(true);
+      } catch (error) {
+        // Leave cloudReady false on failure: flipping it true here would let the
+        // autosave effect below fire with the still-empty local state and
+        // overwrite the user's real cloud data with nothing.
+        setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다.');
+        setCloudLoadError(true);
+      } finally {
         setAuthLoading(false);
       }
     });
@@ -728,8 +734,28 @@ export default function App() {
 
       {screen !== 'SPLASH' && (!archiveUser || authLoading) && renderUnifiedAuth()}
 
+      {screen !== 'SPLASH' && archiveUser && !authLoading && cloudLoadError && (
+        <main className="w-full viewport-height bg-background text-on-surface flex items-center justify-center px-4">
+          <div className="w-full max-w-sm rounded-xl border border-outline-variant/40 bg-surface-container-lowest p-6 text-center shadow-soft">
+            <p className="text-sm font-semibold text-on-surface">
+              자료실과 동기화하지 못했습니다. 네트워크 연결을 확인한 뒤 다시 시도해 주세요.
+            </p>
+            {archiveStatus && (
+              <p className="mt-2 text-xs text-on-surface-variant">{archiveStatus}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 w-full h-10 rounded-lg bg-primary text-white font-bold"
+            >
+              다시 시도
+            </button>
+          </div>
+        </main>
+      )}
+
       {/* Main app layouts */}
-      {screen !== 'SPLASH' && archiveUser && !authLoading && (
+      {screen !== 'SPLASH' && archiveUser && !authLoading && !cloudLoadError && (
         <>
         {/* Desktop / tablet layout (768px and up) */}
         <div className="hidden md:flex md:flex-col lg:flex-row viewport-height w-full overflow-hidden">
