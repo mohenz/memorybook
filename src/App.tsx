@@ -9,13 +9,14 @@
  */
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
+import {
   Plus,
   Search,
   SlidersHorizontal,
   FileText,
   Image as ImageIcon,
   Cloud,
+  CloudOff,
   Lock,
   LogIn,
   CalendarDays,
@@ -129,6 +130,7 @@ export default function App() {
   const [loginStatus, setLoginStatus] = useState('');
   const [resetMode, setResetMode] = useState(false);
   const [cloudReady, setCloudReady] = useState(false);
+  const [cloudLoadFailed, setCloudLoadFailed] = useState(false);
 
   // Capture PWA installation prompt
   useEffect(() => {
@@ -171,57 +173,74 @@ export default function App() {
   const [prefilledDate, setPrefilledDate] = useState<string | null>(null);
   const draftNoteIdRef = useRef<string | null>(null);
 
+  // Loads one user's cloud state into local state. Called on every auth change and
+  // again by the "다시 시도" retry button after a failed load — a failed load must
+  // never be indistinguishable from an empty account, so callers gate the main UI on
+  // cloudLoadFailed instead of silently falling through to a blank dashboard.
+  const loadCloudState = async (user: { uid: string; email: string | null }) => {
+    setCloudReady(false);
+    setCloudLoadFailed(false);
+    setAuthLoading(true);
+
+    try {
+      const cloudState = await loadMemoCloudState(user.uid);
+      const loadedNotes = Array.isArray(cloudState?.notes)
+        ? cloudState.notes.filter((note) => !LEGACY_SAMPLE_NOTE_IDS.has(note.id))
+        : [];
+      const nextGroups = Array.isArray(cloudState?.groups)
+        ? cloudState.groups.filter((group) => !LEGACY_SAMPLE_GROUP_IDS.has(group.id))
+        : [];
+      const nextSchedules = Array.isArray(cloudState?.schedules) ? cloudState.schedules : [];
+      const loadedTodos = Array.isArray(cloudState?.todos) ? cloudState.todos : [];
+      const migratedTodoState = migrateLegacyChecklistItems(loadedNotes, loadedTodos);
+
+      setNotes(migratedTodoState.notes);
+      setTodos(migratedTodoState.todos);
+      setGroups(nextGroups);
+      setSchedules(nextSchedules);
+      setNotificationSettings(cloudState?.notificationSettings || DEFAULT_NOTIFICATION_SETTINGS);
+      setProfileImage(typeof cloudState?.profileImage === 'string' ? cloudState.profileImage : PREMIUM_IMAGES.userProfile);
+      setDarkMode(typeof cloudState?.darkMode === 'boolean' ? cloudState.darkMode : false);
+      setArchiveStatus('자료실 계정과 동기화되었습니다.');
+
+      // One-time legacy checklist -> todo migration needs to be flushed back to its
+      // own rows. Each write below targets exactly one note/todo, so a failure here
+      // (e.g. a flaky connection) can only leave that single row stale for next login
+      // — it can never touch, let alone wipe, unrelated data.
+      const loadedTodoIds = new Set(loadedTodos.map((todo) => todo.id));
+      const newlyMigratedTodos = migratedTodoState.todos.filter((todo) => !loadedTodoIds.has(todo.id));
+      const notesWithClearedChecklist = migratedTodoState.notes.filter((note, index) => (loadedNotes[index]?.checklist?.length ?? 0) > 0);
+      await Promise.all([
+        ...newlyMigratedTodos.map((todo) => upsertTodo(user.uid, todo)),
+        ...notesWithClearedChecklist.map((note) => upsertNote(user.uid, note)),
+      ]);
+    } catch (error) {
+      setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
+      setCloudLoadFailed(true);
+    } finally {
+      setCloudReady(true);
+      setAuthLoading(false);
+    }
+  };
+
   useEffect(() => {
     return subscribeArchiveAccount(async (user) => {
       setArchiveUser(user ? { uid: user.uid, email: user.email } : null);
-      setCloudReady(false);
-      setAuthLoading(true);
 
       if (!user) {
+        setCloudReady(false);
+        setCloudLoadFailed(false);
         setAuthLoading(false);
         return;
       }
 
-      try {
-        const cloudState = await loadMemoCloudState(user.uid);
-        const loadedNotes = Array.isArray(cloudState?.notes)
-          ? cloudState.notes.filter((note) => !LEGACY_SAMPLE_NOTE_IDS.has(note.id))
-          : [];
-        const nextGroups = Array.isArray(cloudState?.groups)
-          ? cloudState.groups.filter((group) => !LEGACY_SAMPLE_GROUP_IDS.has(group.id))
-          : [];
-        const nextSchedules = Array.isArray(cloudState?.schedules) ? cloudState.schedules : [];
-        const loadedTodos = Array.isArray(cloudState?.todos) ? cloudState.todos : [];
-        const migratedTodoState = migrateLegacyChecklistItems(loadedNotes, loadedTodos);
-
-        setNotes(migratedTodoState.notes);
-        setTodos(migratedTodoState.todos);
-        setGroups(nextGroups);
-        setSchedules(nextSchedules);
-        setNotificationSettings(cloudState?.notificationSettings || DEFAULT_NOTIFICATION_SETTINGS);
-        setProfileImage(typeof cloudState?.profileImage === 'string' ? cloudState.profileImage : PREMIUM_IMAGES.userProfile);
-        setDarkMode(typeof cloudState?.darkMode === 'boolean' ? cloudState.darkMode : false);
-        setArchiveStatus('자료실 계정과 동기화되었습니다.');
-
-        // One-time legacy checklist -> todo migration needs to be flushed back to its
-        // own rows. Each write below targets exactly one note/todo, so a failure here
-        // (e.g. a flaky connection) can only leave that single row stale for next login
-        // — it can never touch, let alone wipe, unrelated data.
-        const loadedTodoIds = new Set(loadedTodos.map((todo) => todo.id));
-        const newlyMigratedTodos = migratedTodoState.todos.filter((todo) => !loadedTodoIds.has(todo.id));
-        const notesWithClearedChecklist = migratedTodoState.notes.filter((note, index) => (loadedNotes[index]?.checklist?.length ?? 0) > 0);
-        await Promise.all([
-          ...newlyMigratedTodos.map((todo) => upsertTodo(user.uid, todo)),
-          ...notesWithClearedChecklist.map((note) => upsertNote(user.uid, note)),
-        ]);
-      } catch (error) {
-        setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다. 연결을 확인한 뒤 새로고침해 다시 시도해 주세요.');
-      } finally {
-        setCloudReady(true);
-        setAuthLoading(false);
-      }
+      await loadCloudState(user);
     });
   }, []);
+
+  const handleRetryCloudSync = () => {
+    if (archiveUser) loadCloudState(archiveUser);
+  };
 
   // --- Computed Note Filters for Middle Pane ---
   const filteredDashboardNotes = useMemo(() => {
@@ -687,6 +706,30 @@ export default function App() {
     </main>
   );
 
+  // Shown instead of the (otherwise indistinguishable-from-empty) main app when the
+  // initial cloud load fails — an unstable mobile connection must never look like a
+  // wiped account.
+  const renderCloudSyncError = () => (
+    <main className="relative w-full viewport-height bg-background text-on-surface flex items-center justify-center overflow-hidden px-4">
+      <section className="relative z-10 w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-soft p-6 md:p-8 text-center">
+        <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center shadow-soft mx-auto mb-4">
+          <CloudOff className="w-6 h-6" />
+        </div>
+        <h1 className="text-lg font-bold text-on-background mb-2">데이터를 불러오지 못했습니다</h1>
+        <p className="text-sm text-on-surface-variant mb-1">{archiveStatus || '연결이 불안정해 자료실과 동기화하지 못했습니다.'}</p>
+        <p className="text-xs text-on-surface-variant mb-6">저장된 메모·일정·TO-DO는 안전합니다 — 지금 화면이 비어 보이는 건 초기화가 아니라 동기화 실패입니다.</p>
+        <button
+          type="button"
+          onClick={handleRetryCloudSync}
+          className="w-full h-11 rounded-lg bg-primary text-white font-bold flex items-center justify-center gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          <span>다시 시도</span>
+        </button>
+      </section>
+    </main>
+  );
+
   // Screens shared by desktop and mobile layouts (rendered without the desktop sidebar on mobile)
   const renderOverlayScreen = () => (
     <>
@@ -764,8 +807,10 @@ export default function App() {
 
       {screen !== 'SPLASH' && (!archiveUser || authLoading) && renderUnifiedAuth()}
 
+      {screen !== 'SPLASH' && archiveUser && !authLoading && cloudLoadFailed && renderCloudSyncError()}
+
       {/* Main app layouts */}
-      {screen !== 'SPLASH' && archiveUser && !authLoading && (
+      {screen !== 'SPLASH' && archiveUser && !authLoading && !cloudLoadFailed && (
         <>
         {/* Desktop / tablet layout (768px and up) */}
         <div className="hidden md:flex md:flex-col lg:flex-row viewport-height w-full overflow-hidden">
