@@ -5,7 +5,10 @@ import pg from 'pg';
 
 const root = path.resolve(import.meta.dirname, '..');
 const configPath = path.join(root, 'config', 'memorybook.cfg');
-const migrationPath = path.join(root, 'supabase', 'migrations', '202608050001_initial_memorybook.sql');
+const migrationFiles = [
+  '202608050001_initial_memorybook.sql',
+  '202608241200_normalize_memo_tables.sql',
+].map((file) => path.join(root, 'supabase', 'migrations', file));
 
 function decode(value) {
   try {
@@ -92,24 +95,41 @@ async function backupRest() {
 }
 
 async function migrate(client) {
-  const sql = await fs.readFile(migrationPath, 'utf8');
-  await client.query('begin');
-  try {
-    await client.query(sql);
-    await client.query('commit');
-  } catch (error) {
-    await client.query('rollback');
-    throw error;
+  const applied = [];
+  for (const migrationPath of migrationFiles) {
+    const sql = await fs.readFile(migrationPath, 'utf8');
+    await client.query('begin');
+    try {
+      await client.query(sql);
+      await client.query('commit');
+    } catch (error) {
+      await client.query('rollback');
+      throw new Error(`${path.relative(root, migrationPath)} 적용 실패: ${error.message}`);
+    }
+    applied.push(path.relative(root, migrationPath));
   }
-  console.log(JSON.stringify({ migration: path.relative(root, migrationPath), applied: true }));
+  console.log(JSON.stringify({ migrations: applied, applied: true }));
 }
 
+const NORMALIZED_TABLES = ['users', 'groups', 'notes', 'schedules', 'todos'];
+
 async function verify(client) {
-  const tables = await client.query("select c.relname as table_name, c.relrowsecurity as rls from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname in ('memo_states', 'archive_files') order by c.relname");
-  const policies = await client.query("select schemaname, tablename, policyname, cmd from pg_policies where (schemaname = 'public' and tablename in ('memo_states', 'archive_files')) or (schemaname = 'storage' and tablename = 'objects' and policyname like 'memorybook_%') order by schemaname, tablename, policyname");
+  const allTables = ['memo_states', 'archive_files', ...NORMALIZED_TABLES];
+  const tables = await client.query(
+    "select c.relname as table_name, c.relrowsecurity as rls from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname = any($1::text[]) order by c.relname",
+    [allTables],
+  );
+  const policies = await client.query(
+    "select schemaname, tablename, policyname, cmd from pg_policies where (schemaname = 'public' and tablename = any($1::text[])) or (schemaname = 'storage' and tablename = 'objects' and policyname like 'memorybook_%') order by schemaname, tablename, policyname",
+    [allTables],
+  );
   const bucket = await client.query("select id, public, file_size_limit from storage.buckets where id = 'memorybook-files'");
-  const counts = await client.query("select (select count(*) from public.memo_states)::int as memo_states, (select count(*) from public.archive_files)::int as archive_files");
-  console.log(JSON.stringify({ tables: tables.rows, policyCount: policies.rowCount, bucket: bucket.rows[0] || null, counts: counts.rows[0] }, null, 2));
+  const counts = {};
+  for (const table of allTables) {
+    const result = await client.query(`select count(*)::int as count from public.${quoteIdentifier(table)}`);
+    counts[table] = result.rows[0].count;
+  }
+  console.log(JSON.stringify({ tables: tables.rows, policyCount: policies.rowCount, bucket: bucket.rows[0] || null, counts }, null, 2));
 }
 
 const action = process.argv[2];

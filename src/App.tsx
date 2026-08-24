@@ -41,12 +41,19 @@ import { MobileTab } from './mobile/MobileBottomNav';
 import MobileNoteEditorScreen from './mobile/screens/MobileNoteEditorScreen';
 import './archiveStore/styles.css';
 import {
+  deleteNote as deleteNoteRow,
+  deleteSchedule as deleteScheduleRow,
+  deleteTodo as deleteTodoRow,
   loadMemoCloudState,
   loginArchiveAccount,
   logoutArchiveAccount,
   resetArchivePassword,
-  saveMemoCloudState,
+  saveUserSettings,
   subscribeArchiveAccount,
+  upsertGroups,
+  upsertNote,
+  upsertSchedule,
+  upsertTodo,
   uploadMemoImage,
   uploadMemoProfileImage,
 } from './services/archiveIntegration';
@@ -122,7 +129,6 @@ export default function App() {
   const [loginStatus, setLoginStatus] = useState('');
   const [resetMode, setResetMode] = useState(false);
   const [cloudReady, setCloudReady] = useState(false);
-  const saveTimerRef = useRef<number | null>(null);
 
   // Capture PWA installation prompt
   useEffect(() => {
@@ -185,10 +191,9 @@ export default function App() {
           ? cloudState.groups.filter((group) => !LEGACY_SAMPLE_GROUP_IDS.has(group.id))
           : [];
         const nextSchedules = Array.isArray(cloudState?.schedules) ? cloudState.schedules : [];
-        const migratedTodoState = migrateLegacyChecklistItems(
-          loadedNotes,
-          Array.isArray(cloudState?.todos) ? cloudState.todos : [],
-        );
+        const loadedTodos = Array.isArray(cloudState?.todos) ? cloudState.todos : [];
+        const migratedTodoState = migrateLegacyChecklistItems(loadedNotes, loadedTodos);
+
         setNotes(migratedTodoState.notes);
         setTodos(migratedTodoState.todos);
         setGroups(nextGroups);
@@ -197,29 +202,26 @@ export default function App() {
         setProfileImage(typeof cloudState?.profileImage === 'string' ? cloudState.profileImage : PREMIUM_IMAGES.userProfile);
         setDarkMode(typeof cloudState?.darkMode === 'boolean' ? cloudState.darkMode : false);
         setArchiveStatus('자료실 계정과 동기화되었습니다.');
+
+        // One-time legacy checklist -> todo migration needs to be flushed back to its
+        // own rows. Each write below targets exactly one note/todo, so a failure here
+        // (e.g. a flaky connection) can only leave that single row stale for next login
+        // — it can never touch, let alone wipe, unrelated data.
+        const loadedTodoIds = new Set(loadedTodos.map((todo) => todo.id));
+        const newlyMigratedTodos = migratedTodoState.todos.filter((todo) => !loadedTodoIds.has(todo.id));
+        const notesWithClearedChecklist = migratedTodoState.notes.filter((note, index) => (loadedNotes[index]?.checklist?.length ?? 0) > 0);
+        await Promise.all([
+          ...newlyMigratedTodos.map((todo) => upsertTodo(user.uid, todo)),
+          ...notesWithClearedChecklist.map((note) => upsertNote(user.uid, note)),
+        ]);
       } catch (error) {
-        setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다.');
+        setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다. 연결을 확인한 뒤 새로고침해 다시 시도해 주세요.');
       } finally {
         setCloudReady(true);
         setAuthLoading(false);
       }
     });
   }, []);
-
-  useEffect(() => {
-    if (!archiveUser || !cloudReady) return;
-    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-
-    saveTimerRef.current = window.setTimeout(() => {
-      saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, todos, profileImage, notificationSettings })
-        .then(() => setArchiveStatus('자료실 백엔드에 저장되었습니다.'))
-        .catch((error) => setArchiveStatus(error instanceof Error ? error.message : '자료실 저장에 실패했습니다.'));
-    }, 500);
-
-    return () => {
-      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-    };
-  }, [archiveUser, cloudReady, darkMode, groups, notes, schedules, todos, profileImage, notificationSettings]);
 
   // --- Computed Note Filters for Middle Pane ---
   const filteredDashboardNotes = useMemo(() => {
@@ -280,50 +282,61 @@ export default function App() {
   }, [notes, selectedNoteId, filteredDashboardNotes]);
 
   // --- State Action Handlers ---
+  const reportSaveError = (error: unknown, fallback: string) =>
+    setArchiveStatus(error instanceof Error ? error.message : fallback);
+
   const handleAddFolder = (name: string) => {
     const newGroup: Group = {
       id: 'group-' + Date.now(),
       name: name,
       icon: 'Folder'
     };
-    setGroups([...groups, newGroup]);
+    const next = [...groups, newGroup];
+    setGroups(next);
     setActiveGroupId(newGroup.id);
+    if (archiveUser) upsertGroups(archiveUser.uid, next).catch((error) => reportSaveError(error, '폴더 저장에 실패했습니다.'));
   };
 
   const handleRenameFolder = (groupId: string, newName: string) => {
-    setGroups(prev => prev.map(group => (
+    const next = groups.map(group => (
       group.id === groupId ? { ...group, name: newName } : group
-    )));
+    ));
+    setGroups(next);
+    if (archiveUser) upsertGroups(archiveUser.uid, next).catch((error) => reportSaveError(error, '폴더 저장에 실패했습니다.'));
   };
 
   // Group display order doubles as priority: index 0 is the highest priority.
   const handleReorderGroup = (groupId: string, direction: 'up' | 'down') => {
-    setGroups(prev => {
-      const index = prev.findIndex(group => group.id === groupId);
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      if (index === -1 || targetIndex < 0 || targetIndex >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
-      return next;
-    });
+    const index = groups.findIndex(group => group.id === groupId);
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (index === -1 || targetIndex < 0 || targetIndex >= groups.length) return;
+    const next = [...groups];
+    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    setGroups(next);
+    if (archiveUser) upsertGroups(archiveUser.uid, next).catch((error) => reportSaveError(error, '폴더 순서 저장에 실패했습니다.'));
   };
 
   const handleToggleFavorite = (noteId: string) => {
-    setNotes(prev => prev.map(note => 
-      note.id === noteId ? { ...note, isFavorite: !note.isFavorite } : note
-    ));
+    const target = notes.find(note => note.id === noteId);
+    if (!target) return;
+    const next = { ...target, isFavorite: !target.isFavorite };
+    setNotes(prev => prev.map(note => note.id === noteId ? next : note));
+    if (archiveUser) upsertNote(archiveUser.uid, next).catch((error) => reportSaveError(error, '메모 저장에 실패했습니다.'));
   };
 
   const handleSetTodoStatus = (todoId: string, status: TodoStatus) => {
-    const updatedAt = new Date().toISOString();
-    setTodos(prev => prev.map(todo => todo.id === todoId ? { ...todo, status, updatedAt } : todo));
+    const target = todos.find(todo => todo.id === todoId);
+    if (!target) return;
+    const next = { ...target, status, updatedAt: new Date().toISOString() };
+    setTodos(prev => prev.map(todo => todo.id === todoId ? next : todo));
+    if (archiveUser) upsertTodo(archiveUser.uid, next).catch((error) => reportSaveError(error, 'TO-DO 저장에 실패했습니다.'));
   };
 
   const handleAddTodo = (text: string, targetDateString: string) => {
     const trimmedText = text.trim();
     if (!trimmedText) return;
     const now = new Date().toISOString();
-    setTodos(prev => [{
+    const newTodo: TodoItem = {
       id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       text: trimmedText,
       status: 'todo',
@@ -331,38 +344,46 @@ export default function App() {
       targetDateString,
       createdAt: now,
       updatedAt: now,
-    }, ...prev]);
+    };
+    setTodos(prev => [newTodo, ...prev]);
+    if (archiveUser) upsertTodo(archiveUser.uid, newTodo).catch((error) => reportSaveError(error, 'TO-DO 저장에 실패했습니다.'));
   };
 
   const handleUpdateTodo = (todoId: string, fields: Pick<TodoItem, 'text' | 'targetDateString'>) => {
     const text = fields.text.trim();
     if (!text) return;
-    setTodos(prev => prev.map(todo => todo.id === todoId ? {
-      ...todo,
+    const target = todos.find(todo => todo.id === todoId);
+    if (!target) return;
+    const next = {
+      ...target,
       text,
       targetDateString: fields.targetDateString,
       updatedAt: new Date().toISOString(),
-    } : todo));
+    };
+    setTodos(prev => prev.map(todo => todo.id === todoId ? next : todo));
+    if (archiveUser) upsertTodo(archiveUser.uid, next).catch((error) => reportSaveError(error, 'TO-DO 저장에 실패했습니다.'));
   };
 
   const handleDeleteTodo = (todoId: string) => {
     setTodos(prev => prev.filter(todo => todo.id !== todoId));
+    if (archiveUser) deleteTodoRow(archiveUser.uid, todoId).catch((error) => reportSaveError(error, 'TO-DO 삭제에 실패했습니다.'));
   };
 
   const handleDeleteNote = (noteId: string) => {
-    setNotes(prev => prev.map(note => {
-      if (note.id === noteId) {
-        if (note.isDeleted) {
-          // If already in trash, perm-delete it
-          return null;
-        } else {
-          // Soft delete
-          return { ...note, isDeleted: true };
-        }
-      }
-      return note;
-    }).filter((n): n is Note => n !== null));
-    
+    const target = notes.find(note => note.id === noteId);
+    if (!target) return;
+
+    if (target.isDeleted) {
+      // Already in trash: perm-delete it.
+      setNotes(prev => prev.filter(note => note.id !== noteId));
+      if (archiveUser) deleteNoteRow(archiveUser.uid, noteId).catch((error) => reportSaveError(error, '메모 삭제에 실패했습니다.'));
+    } else {
+      // Soft delete.
+      const next = { ...target, isDeleted: true };
+      setNotes(prev => prev.map(note => note.id === noteId ? next : note));
+      if (archiveUser) upsertNote(archiveUser.uid, next).catch((error) => reportSaveError(error, '메모 삭제에 실패했습니다.'));
+    }
+
     // Select another note after deletion
     const remaining = filteredDashboardNotes.filter(n => n.id !== noteId);
     if (remaining.length > 0) {
@@ -371,7 +392,10 @@ export default function App() {
   };
 
   const handleRestoreNote = (noteId: string) => {
-    setNotes(prev => restoreNote(prev, noteId));
+    const next = restoreNote(notes, noteId);
+    setNotes(next);
+    const restored = next.find(note => note.id === noteId);
+    if (archiveUser && restored) upsertNote(archiveUser.uid, restored).catch((error) => reportSaveError(error, '메모 복원에 실패했습니다.'));
   };
 
   // --- Schedule CRUD handlers (mirrors the note handlers above) ---
@@ -405,47 +429,55 @@ export default function App() {
       updatedAt: timestamp,
     };
     setSchedules(prev => [...prev, newSchedule]);
+    if (archiveUser) upsertSchedule(archiveUser.uid, newSchedule).catch((error) => reportSaveError(error, '일정 저장에 실패했습니다.'));
   };
 
   const handleUpdateSchedule = (scheduleId: string, draft: ScheduleDraft) => {
-    setSchedules(prev => prev.map(schedule => (
-      schedule.id === scheduleId
+    const current = schedules.find(schedule => schedule.id === scheduleId);
+    if (!current) return;
+    const next: Schedule = {
+      ...current,
+      title: draft.title,
+      dateString: draft.dateString,
+      allDay: draft.allDay,
+      startTime: draft.allDay ? undefined : draft.startTime,
+      endTime: draft.allDay ? undefined : draft.endTime,
+      priority: draft.priority,
+      memo: draft.memo || undefined,
+      recurrence: draft.recurrence
         ? {
-            ...schedule,
-            title: draft.title,
-            dateString: draft.dateString,
-            allDay: draft.allDay,
-            startTime: draft.allDay ? undefined : draft.startTime,
-            endTime: draft.allDay ? undefined : draft.endTime,
-            priority: draft.priority,
-            memo: draft.memo || undefined,
-            recurrence: draft.recurrence
-              ? {
-                  frequency: 'weekly',
-                  weekdays: [...draft.recurrence.weekdays],
-                  ...(draft.recurrence.untilDateString
-                    ? { untilDateString: draft.recurrence.untilDateString }
-                    : {}),
-                }
-              : undefined,
-            reminder: draft.reminder ? { ...draft.reminder } : undefined,
-            updatedAt: formatTimestamp(),
+            frequency: 'weekly',
+            weekdays: [...draft.recurrence.weekdays],
+            ...(draft.recurrence.untilDateString
+              ? { untilDateString: draft.recurrence.untilDateString }
+              : {}),
           }
-        : schedule
-    )));
+        : undefined,
+      reminder: draft.reminder ? { ...draft.reminder } : undefined,
+      updatedAt: formatTimestamp(),
+    };
+    setSchedules(prev => prev.map(schedule => schedule.id === scheduleId ? next : schedule));
+    if (archiveUser) upsertSchedule(archiveUser.uid, next).catch((error) => reportSaveError(error, '일정 저장에 실패했습니다.'));
   };
 
   const handleDeleteSchedule = (scheduleId: string) => {
-    setSchedules(prev => moveScheduleToTrash(prev, scheduleId, formatTimestamp()));
+    const next = moveScheduleToTrash(schedules, scheduleId, formatTimestamp());
+    setSchedules(next);
+    const updated = next.find(schedule => schedule.id === scheduleId);
+    if (archiveUser && updated) upsertSchedule(archiveUser.uid, updated).catch((error) => reportSaveError(error, '일정 삭제에 실패했습니다.'));
   };
 
   const handleRestoreSchedule = (scheduleId: string) => {
-    setSchedules(prev => restoreSchedule(prev, scheduleId, formatTimestamp()));
+    const next = restoreSchedule(schedules, scheduleId, formatTimestamp());
+    setSchedules(next);
+    const updated = next.find(schedule => schedule.id === scheduleId);
+    if (archiveUser && updated) upsertSchedule(archiveUser.uid, updated).catch((error) => reportSaveError(error, '일정 복원에 실패했습니다.'));
   };
 
   const handlePermanentlyDeleteSchedule = (scheduleId: string) => {
     if (!confirm('이 일정을 영구 삭제하시겠습니까?')) return;
     setSchedules(prev => permanentlyDeleteSchedule(prev, scheduleId));
+    if (archiveUser) deleteScheduleRow(archiveUser.uid, scheduleId).catch((error) => reportSaveError(error, '일정 삭제에 실패했습니다.'));
   };
 
   const handleStartAddNote = (withDate?: string) => {
@@ -463,17 +495,19 @@ export default function App() {
 
   const handleAutoSaveNote = (editedFields: Partial<Note>) => {
     if (editingNote) {
-      setNotes(prev => prev.map(note =>
-        note.id === editingNote.id ? { ...note, ...editedFields } as Note : note
-      ));
+      const next = { ...editingNote, ...editedFields } as Note;
+      setNotes(prev => prev.map(note => note.id === editingNote.id ? next : note));
+      if (archiveUser) upsertNote(archiveUser.uid, next).catch((error) => reportSaveError(error, '메모 저장에 실패했습니다.'));
       return;
     }
 
     const draftNoteId = draftNoteIdRef.current;
     if (draftNoteId) {
-      setNotes(prev => prev.map(note =>
-        note.id === draftNoteId ? { ...note, ...editedFields } as Note : note
-      ));
+      const current = notes.find(note => note.id === draftNoteId);
+      if (!current) return;
+      const next = { ...current, ...editedFields } as Note;
+      setNotes(prev => prev.map(note => note.id === draftNoteId ? next : note));
+      if (archiveUser) upsertNote(archiveUser.uid, next).catch((error) => reportSaveError(error, '메모 저장에 실패했습니다.'));
       return;
     }
 
@@ -496,6 +530,7 @@ export default function App() {
     setEditingNote(newNote);
     setNotes(prev => [newNote, ...prev]);
     setSelectedNoteId(newNote.id);
+    if (archiveUser) upsertNote(archiveUser.uid, newNote).catch((error) => reportSaveError(error, '메모 저장에 실패했습니다.'));
   };
 
   const handleSaveNote = (editedFields: Partial<Note>) => {
@@ -510,16 +545,16 @@ export default function App() {
       }),
     };
 
+    let savedNote: Note;
     if (editingNote) {
       // Editing Mode
-      setNotes(prev => prev.map(note => 
-        note.id === editingNote.id ? { ...note, ...savedFields } as Note : note
-      ));
+      savedNote = { ...editingNote, ...savedFields } as Note;
+      setNotes(prev => prev.map(note => note.id === editingNote.id ? savedNote : note));
       setSelectedNoteId(editingNote.id);
     } else {
       // Creating Mode
       const dateStr = prefilledDate || toLocalDateString(); // Pre-filled or current local date
-      const newNote: Note = {
+      savedNote = {
         id: 'note-' + Date.now(),
         title: savedFields.title || '제목 없는 메모',
         content: savedFields.content || '',
@@ -532,9 +567,10 @@ export default function App() {
         images: savedFields.images || [],
         checklist: savedFields.checklist || []
       };
-      setNotes(prev => [newNote, ...prev]);
-      setSelectedNoteId(newNote.id);
+      setNotes(prev => [savedNote, ...prev]);
+      setSelectedNoteId(savedNote.id);
     }
+    if (archiveUser) upsertNote(archiveUser.uid, savedNote).catch((error) => reportSaveError(error, '메모 저장에 실패했습니다.'));
     draftNoteIdRef.current = null;
     setPrefilledDate(null);
     setScreen('DASHBOARD');
@@ -1013,18 +1049,24 @@ export default function App() {
             if (!archiveUser) throw new Error('로그인 후 프로필 이미지를 저장할 수 있습니다.');
             const imageUrl = await uploadMemoProfileImage(archiveUser.uid, file);
             setProfileImage(imageUrl);
-            await saveMemoCloudState(archiveUser.uid, { darkMode, groups, notes, schedules, todos, profileImage: imageUrl, notificationSettings });
+            await saveUserSettings(archiveUser.uid, { darkMode, profileImage: imageUrl, notificationSettings });
             setArchiveStatus('프로필 이미지가 자료실 Storage에 저장되었습니다.');
           }}
           darkMode={darkMode}
-          onToggleDarkMode={(enabled) => setDarkMode(enabled)}
+          onToggleDarkMode={(enabled) => {
+            setDarkMode(enabled);
+            if (archiveUser) saveUserSettings(archiveUser.uid, { darkMode: enabled, profileImage, notificationSettings }).catch((error) => reportSaveError(error, '설정 저장에 실패했습니다.'));
+          }}
           groups={groups}
           onRenameGroup={handleRenameFolder}
           onReorderGroup={handleReorderGroup}
           archiveUserEmail={archiveUser?.email || ''}
           archiveStatus={archiveStatus}
           notificationSettings={notificationSettings}
-          onNotificationSettingsChange={setNotificationSettings}
+          onNotificationSettingsChange={(next) => {
+            setNotificationSettings(next);
+            if (archiveUser) saveUserSettings(archiveUser.uid, { darkMode, profileImage, notificationSettings: next }).catch((error) => reportSaveError(error, '설정 저장에 실패했습니다.'));
+          }}
           onRequestNotificationPermission={notifications.requestPermission}
           notificationsSupported={notifications.supported}
           supabaseConfigured={isSupabaseConfigured}
