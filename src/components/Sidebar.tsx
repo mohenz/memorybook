@@ -281,26 +281,6 @@ export default function Sidebar({
 
       {/* Sidebar Footer */}
       <div className="hidden lg:flex mt-auto shrink-0 p-3 border-t border-outline-variant/30 flex-col gap-1 bg-surface-container-low">
-        <div className="grid grid-cols-2 gap-2 px-2 pb-2">
-          <button
-            type="button"
-            onClick={onAddSchedule}
-            aria-label="일정 추가"
-            title="일정 추가"
-            className="flex h-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            <CalendarPlus className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onAddNote}
-            aria-label="메모 추가"
-            title="메모 추가"
-            className="flex h-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-white"
-          >
-            <FileText className="h-4 w-4" />
-          </button>
-        </div>
         <div className="flex items-center justify-between px-2 text-xs text-outline font-semibold">
           <button
             type="button"
@@ -313,6 +293,24 @@ export default function Sidebar({
           </button>
 
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onAddSchedule}
+              aria-label="일정 추가"
+              title="일정 추가"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={onAddNote}
+              aria-label="메모 추가"
+              title="메모 추가"
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
+            >
+              <FileText className="w-3.5 h-3.5" />
+            </button>
             <button
               type="button"
               onClick={onOpenSettings}
