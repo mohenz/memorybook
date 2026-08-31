@@ -1,6 +1,7 @@
 import { CalendarDays, FileText, RotateCcw, Trash2 } from 'lucide-react';
 import { Note, Schedule } from '../../types';
 import MobileEmptyState from '../components/MobileEmptyState';
+import { stripMarkdown } from '../../utils/markdown';
 
 interface MobileTrashScreenProps {
   notes: Note[];
@@ -42,7 +43,7 @@ export default function MobileTrashScreen({
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold text-primary">메모</p>
                     <p className="text-sm font-bold text-on-surface truncate">{note.title}</p>
-                    <p className="text-xs text-on-surface-variant line-clamp-1">{note.content}</p>
+                    <p className="text-xs text-on-surface-variant line-clamp-1">{stripMarkdown(note.content)}</p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 mt-3">

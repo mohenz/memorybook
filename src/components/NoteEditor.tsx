@@ -12,6 +12,7 @@ import {
 import { Note, Group } from '../types';
 import { PREMIUM_IMAGES } from '../data';
 import GroupButtonSelector from './GroupButtonSelector';
+import MarkdownToolbar from './MarkdownToolbar';
 
 interface NoteEditorProps {
   note: Note | null; // null if creating a new note
@@ -40,6 +41,7 @@ export default function NoteEditor({
   const [uploadStatus, setUploadStatus] = useState('');
   const initialSnapshotRef = useRef('');
   const lastAutoSavedSnapshotRef = useRef('');
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const buildNotePayload = (): Partial<Note> => ({
     title: title.trim() || '제목 없는 메모',
@@ -224,7 +226,9 @@ export default function NoteEditor({
         <div className="w-full min-h-full max-w-none mx-auto space-y-6 bg-surface-container-lowest/80 backdrop-blur-xs p-5 md:p-8 rounded-xl border border-outline-variant/30 shadow-soft">
           
           {/* Core Content Textarea */}
-          <textarea 
+          <MarkdownToolbar textareaRef={contentTextareaRef} value={content} onChange={setContent} />
+          <textarea
+            ref={contentTextareaRef}
             className="w-full min-h-[40vh] md:min-h-[calc(100vh-360px)] bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-on-surface font-sans text-base leading-8 resize-y"
             placeholder="여기에 내용을 입력하세요..."
             style={{ lineHeight: '28px' }}

@@ -10,6 +10,7 @@ import {
   Plus
 } from 'lucide-react';
 import { Note, Group } from '../types';
+import { stripMarkdown } from '../utils/markdown';
 
 interface SearchViewProps {
   notes: Note[];
@@ -194,7 +195,7 @@ export default function SearchView({
 
                       {/* Highlighted Snippet */}
                       <p className="text-xs leading-5 text-text-secondary line-clamp-3 flex-grow font-medium">
-                        {renderHighlightedText(note.content, query)}
+                        {renderHighlightedText(stripMarkdown(note.content), query)}
                       </p>
 
                       {/* Checklist Summary indicator */}

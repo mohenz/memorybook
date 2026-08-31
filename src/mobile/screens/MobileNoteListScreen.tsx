@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Plus, Search, X } from 'lucide-react';
 import { Note } from '../../types';
 import MobileEmptyState from '../components/MobileEmptyState';
+import { stripMarkdown } from '../../utils/markdown';
 
 interface MobileNoteListScreenProps {
   notes: Note[];
@@ -110,7 +111,7 @@ export default function MobileNoteListScreen({
                       overflow: 'hidden',
                     }}
                   >
-                    {note.content}
+                    {stripMarkdown(note.content)}
                   </span>
                 </button>
               </li>

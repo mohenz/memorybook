@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Group, Note } from '../../types';
 import GroupButtonSelector from '../../components/GroupButtonSelector';
+import MarkdownToolbar from '../../components/MarkdownToolbar';
 
 interface MobileNoteEditorScreenProps {
   note: Note | null; // null when creating a new note
@@ -26,6 +27,7 @@ export default function MobileNoteEditorScreen({ note, groups, onAutoSave, onBac
   const [groupId, setGroupId] = useState(note?.groupId || groups[0]?.id || '');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const lastSavedSnapshotRef = useRef('');
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const snapshot = useMemo(() => JSON.stringify({ title, content, groupId }), [title, content, groupId]);
 
@@ -92,7 +94,9 @@ export default function MobileNoteEditorScreen({ note, groups, onAutoSave, onBac
           placeholder="제목을 입력하세요"
           className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-lg font-bold text-on-background placeholder:text-outline-variant"
         />
+        <MarkdownToolbar textareaRef={contentTextareaRef} value={content} onChange={setContent} />
         <textarea
+          ref={contentTextareaRef}
           value={content}
           onChange={(event) => setContent(event.target.value)}
           placeholder="내용을 입력하세요"

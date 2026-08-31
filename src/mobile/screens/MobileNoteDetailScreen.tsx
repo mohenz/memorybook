@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Download, Pencil } from 'lucide-react';
 import { Group, Note, TodoItem, TodoStatus } from '../../types';
 import { downloadMarkdownFile } from '../../utils/markdownExport';
+import { renderMarkdownToHtml } from '../../utils/markdown';
 import TodoItemCard from '../../components/TodoItemCard';
 
 interface MobileNoteDetailScreenProps {
@@ -60,9 +61,10 @@ export default function MobileNoteDetailScreen({ note, groups, todos, onUpdateTo
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 py-5">
           <p className="text-xs text-outline mb-2">{note.updatedAt}</p>
           <h2 className="text-xl font-bold text-on-background mb-4 break-words">{note.title}</h2>
-          <p className="text-sm leading-7 text-on-surface-variant whitespace-pre-wrap break-words">
-            {note.content}
-          </p>
+          <div
+            className="prose prose-sm prose-slate max-w-none break-words text-sm leading-7 text-on-surface-variant"
+            dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(note.content) }}
+          />
 
           {note.images && note.images.length > 0 && (
             <div className="flex flex-col gap-3 mt-6">

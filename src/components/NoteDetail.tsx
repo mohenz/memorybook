@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Note, Group, TodoItem, TodoStatus } from '../types';
 import TodoItemCard from './TodoItemCard';
+import { renderMarkdownToHtml } from '../utils/markdown';
 
 interface NoteDetailProps {
   note: Note | null;
@@ -92,9 +93,10 @@ export default function NoteDetail({
 
         {/* Body Content */}
         <div className="prose prose-slate max-w-none">
-          <p className="text-base leading-8 text-on-surface-variant font-medium whitespace-pre-wrap">
-            {note.content}
-          </p>
+          <div
+            className="text-base leading-8 text-on-surface-variant font-medium"
+            dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(note.content) }}
+          />
 
           {/* Attached Image Grid (Hotlinks) */}
           {note.images && note.images.length > 0 && (

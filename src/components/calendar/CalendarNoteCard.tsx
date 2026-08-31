@@ -1,5 +1,6 @@
 import { CheckSquare } from 'lucide-react';
 import { Group, Note } from '../../types';
+import { stripMarkdown } from '../../utils/markdown';
 
 interface CalendarNoteCardProps {
   note: Note;
@@ -28,7 +29,7 @@ export default function CalendarNoteCard({
       </h3>
       {!compact && note.content && (
         <p className="mt-2 text-xs text-text-secondary line-clamp-2 leading-relaxed">
-          {note.content}
+          {stripMarkdown(note.content)}
         </p>
       )}
       <div className="flex flex-wrap gap-2 mt-2">

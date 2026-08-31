@@ -62,6 +62,7 @@ import {
 } from './services/archiveIntegration';
 import { isSupabaseConfigured } from './supabase/client';
 import { resolveNoteTitle } from './utils/autoTitle';
+import { stripMarkdown } from './utils/markdown';
 import { toLocalDateString } from './utils/date';
 import { useSchedulePopup } from './hooks/useSchedulePopup';
 import { useNotification } from './hooks/useNotification';
@@ -1004,7 +1005,7 @@ export default function App() {
                               </h3>
 
                               <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
-                                {note.content}
+                                {stripMarkdown(note.content)}
                               </p>
 
                               {note.images && note.images.length > 0 && (
