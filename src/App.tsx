@@ -173,6 +173,7 @@ export default function App() {
   const [dashboardSortMode, setDashboardSortMode] = useState<'date-desc' | 'date-asc' | 'group'>('date-desc');
   const [showDashboardSortMenu, setShowDashboardSortMenu] = useState(false);
   const [prefilledDate, setPrefilledDate] = useState<string | null>(null);
+  const [createScheduleRequested, setCreateScheduleRequested] = useState(false);
   const draftNoteIdRef = useRef<string | null>(null);
 
   // Loads one user's cloud state into local state. Called on every auth change and
@@ -766,6 +767,8 @@ export default function App() {
       {screen === 'CALENDAR' && (
         <CalendarView
           initialViewMode="agenda"
+          createScheduleRequested={createScheduleRequested}
+          onCreateScheduleRequestHandled={() => setCreateScheduleRequested(false)}
           notes={notes}
           schedules={activeSchedules}
           todos={todos}
@@ -826,6 +829,11 @@ export default function App() {
             activeGroupId={activeGroupId}
             setActiveGroupId={setActiveGroupId}
             onAddGroup={handleAddFolder}
+            onAddSchedule={() => {
+              setScreen('CALENDAR');
+              setCreateScheduleRequested(true);
+            }}
+            onAddNote={() => handleStartAddNote()}
             totalNotesCount={notes.filter(n => !n.isDeleted).length}
             profileImage={profileImage}
             onOpenArchive={() => setScreen('ARCHIVE')}

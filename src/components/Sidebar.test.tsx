@@ -10,6 +10,8 @@ const renderSidebar = () => renderToStaticMarkup(
     activeGroupId="all"
     setActiveGroupId={() => undefined}
     onAddGroup={() => undefined}
+    onAddSchedule={() => undefined}
+    onAddNote={() => undefined}
     totalNotesCount={0}
     profileImage="https://example.com/avatar.png"
     onOpenArchive={() => undefined}
@@ -19,9 +21,11 @@ const renderSidebar = () => renderToStaticMarkup(
 );
 
 describe('Sidebar footer actions', () => {
-  it('renders help, settings, and logout as icon-only accessible buttons', () => {
+  it('renders create, help, settings, and logout actions as accessible icon buttons', () => {
     const markup = renderSidebar();
 
+    expect(markup).toContain('aria-label="일정 추가"');
+    expect(markup).toContain('aria-label="메모 추가"');
     expect(markup).toContain('aria-label="도움말"');
     expect(markup).toContain('aria-label="설정"');
     expect(markup).toContain('aria-label="로그아웃"');

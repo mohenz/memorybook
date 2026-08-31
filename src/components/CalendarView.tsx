@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarPlus, ChevronLeft, ChevronRight, List, Search } from 'lucide-react';
 import { Group, Note, Schedule, TodoItem } from '../types';
 import { toLocalDateString } from '../utils/date';
@@ -32,6 +32,8 @@ type ScheduleModalState =
 
 interface CalendarViewProps {
   initialViewMode?: CalendarViewMode;
+  createScheduleRequested?: boolean;
+  onCreateScheduleRequestHandled?: () => void;
   notes: Note[];
   schedules: Schedule[];
   todos: TodoItem[];
@@ -60,6 +62,8 @@ const MOVE_LABEL: Record<CalendarViewMode, string> = {
 
 export default function CalendarView({
   initialViewMode = 'month',
+  createScheduleRequested = false,
+  onCreateScheduleRequestHandled,
   notes,
   schedules,
   todos,
@@ -101,6 +105,13 @@ export default function CalendarView({
   const moveToToday = () => setSelectedDate(new Date());
 
   const closeScheduleModal = () => setScheduleModal({ mode: 'closed' });
+
+  useEffect(() => {
+    if (createScheduleRequested) {
+      setScheduleModal({ mode: 'create', dateString: selectedDateString, startTime: '09:00' });
+      onCreateScheduleRequestHandled?.();
+    }
+  }, [createScheduleRequested, onCreateScheduleRequestHandled, selectedDateString]);
 
   const handleSaveSchedule = (draft: ScheduleDraft) => {
     if (scheduleModal.mode === 'edit') {
