@@ -6,6 +6,55 @@ const STORAGE_BUCKET = 'memorybook-files';
 const STORAGE_MARKER = 'memorybook-storage:';
 const storageUrlMarkers = new Map<string, string>();
 
+export type CloudSyncStage = 'users' | 'groups' | 'notes' | 'schedules' | 'todos' | 'profile-storage' | 'note-storage';
+
+type SupabaseErrorLike = {
+  message?: string;
+  code?: string;
+  details?: string;
+  hint?: string;
+  status?: number;
+};
+
+export class CloudSyncError extends Error {
+  constructor(
+    public readonly stage: CloudSyncStage,
+    public readonly diagnostic: SupabaseErrorLike,
+  ) {
+    super(diagnostic.message || 'Supabase 요청에 실패했습니다.');
+    this.name = 'CloudSyncError';
+  }
+}
+
+function asDiagnostic(error: unknown): SupabaseErrorLike {
+  if (!error || typeof error !== 'object') return { message: String(error) };
+  const value = error as Record<string, unknown>;
+  return {
+    message: typeof value.message === 'string' ? value.message : undefined,
+    code: typeof value.code === 'string' ? value.code : undefined,
+    details: typeof value.details === 'string' ? value.details : undefined,
+    hint: typeof value.hint === 'string' ? value.hint : undefined,
+    status: typeof value.status === 'number' ? value.status : undefined,
+  };
+}
+
+function cloudSyncError(stage: CloudSyncStage, error: unknown) {
+  return error instanceof CloudSyncError ? error : new CloudSyncError(stage, asDiagnostic(error));
+}
+
+export function cloudSyncErrorMessage(error: unknown) {
+  if (!(error instanceof CloudSyncError)) return '초기 데이터 동기화에 실패했습니다. 연결을 확인한 뒤 다시 시도해 주세요.';
+  const code = error.diagnostic.code || (error.diagnostic.status ? `HTTP ${error.diagnostic.status}` : 'UNKNOWN');
+  return `초기 데이터 동기화에 실패했습니다. 단계: ${error.stage} · 오류: ${code}`;
+}
+
+export function cloudSyncDiagnostic(error: unknown) {
+  if (error instanceof CloudSyncError) {
+    return { stage: error.stage, ...error.diagnostic };
+  }
+  return { stage: 'unknown', ...asDiagnostic(error) };
+}
+
 export interface MemoCloudState {
   darkMode: boolean;
   groups: Group[];
@@ -71,11 +120,11 @@ export async function resetArchivePassword(email: string) {
   if (error) throw error;
 }
 
-async function resolveStorageValue(value: string) {
+async function resolveStorageValue(value: string, stage: Extract<CloudSyncStage, 'profile-storage' | 'note-storage'> = 'note-storage') {
   if (!value.startsWith(STORAGE_MARKER)) return value;
   const storagePath = value.slice(STORAGE_MARKER.length);
   const { data, error } = await requireSupabase().storage.from(STORAGE_BUCKET).createSignedUrl(storagePath, 3600);
-  if (error) throw error;
+  if (error) throw cloudSyncError(stage, error);
   storageUrlMarkers.set(data.signedUrl, value);
   return data.signedUrl;
 }
@@ -85,10 +134,14 @@ function storageValue(value: string) {
 }
 
 async function hydrateNote(note: Note): Promise<Note> {
-  return {
-    ...note,
-    images: await Promise.all(note.images.map(resolveStorageValue)),
-  };
+  try {
+    return {
+      ...note,
+      images: await Promise.all(note.images.map((value) => resolveStorageValue(value, 'note-storage'))),
+    };
+  } catch (error) {
+    throw cloudSyncError('note-storage', error);
+  }
 }
 
 function persistNote(note: Note): Note {
@@ -271,14 +324,14 @@ export async function loadMemoCloudState(userId: string): Promise<Partial<MemoCl
     client.from('todos').select('id, text, status, created_date_string, target_date_string, created_at, updated_at').eq('user_id', userId),
   ]);
 
-  if (usersRes.error) throw usersRes.error;
-  if (groupsRes.error) throw groupsRes.error;
-  if (notesRes.error) throw notesRes.error;
-  if (schedulesRes.error) throw schedulesRes.error;
-  if (todosRes.error) throw todosRes.error;
+  if (usersRes.error) throw cloudSyncError('users', usersRes.error);
+  if (groupsRes.error) throw cloudSyncError('groups', groupsRes.error);
+  if (notesRes.error) throw cloudSyncError('notes', notesRes.error);
+  if (schedulesRes.error) throw cloudSyncError('schedules', schedulesRes.error);
+  if (todosRes.error) throw cloudSyncError('todos', todosRes.error);
 
   const rawProfileImage = usersRes.data?.profile_image;
-  const profileImage = rawProfileImage ? await resolveStorageValue(rawProfileImage) : undefined;
+  const profileImage = rawProfileImage ? await resolveStorageValue(rawProfileImage, 'profile-storage') : undefined;
   const notes = await Promise.all((notesRes.data || []).map((row) => hydrateNote(rowToNote(row as NoteRow))));
 
   return {

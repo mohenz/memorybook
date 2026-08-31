@@ -42,6 +42,8 @@ import { MobileTab } from './mobile/MobileBottomNav';
 import MobileNoteEditorScreen from './mobile/screens/MobileNoteEditorScreen';
 import './archiveStore/styles.css';
 import {
+  cloudSyncDiagnostic,
+  cloudSyncErrorMessage,
   deleteNote as deleteNoteRow,
   deleteSchedule as deleteScheduleRow,
   deleteTodo as deleteTodoRow,
@@ -215,7 +217,8 @@ export default function App() {
         ...notesWithClearedChecklist.map((note) => upsertNote(user.uid, note)),
       ]);
     } catch (error) {
-      setArchiveStatus(error instanceof Error ? error.message : '자료실 동기화에 실패했습니다. 연결을 확인한 뒤 다시 시도해 주세요.');
+      console.error('[MEMOry cloud sync]', cloudSyncDiagnostic(error));
+      setArchiveStatus(cloudSyncErrorMessage(error));
       setCloudLoadFailed(true);
     } finally {
       setCloudReady(true);
