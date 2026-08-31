@@ -169,6 +169,7 @@ export default function App() {
   const [activeGroupId, setActiveGroupId] = useState<string>('all');
   const [selectedNoteId, setSelectedNoteId] = useState<string>('note-1');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [noteEditorDirty, setNoteEditorDirty] = useState(false);
   const [dashboardSearchQuery, setDashboardSearchQuery] = useState('');
   const [dashboardSortMode, setDashboardSortMode] = useState<'date-desc' | 'date-asc' | 'group'>('date-desc');
   const [showDashboardSortMenu, setShowDashboardSortMenu] = useState(false);
@@ -510,6 +511,16 @@ export default function App() {
     setScreen('EDITOR');
   };
 
+  const handleSidebarAddNote = () => {
+    if (
+      screen === 'EDITOR'
+      && noteEditorDirty
+      && !confirm('현재 메모를 작성 중입니다. 새 메모 작성을 시작할까요?\n취소를 선택하면 현재 작성 화면을 유지합니다.')
+    ) return;
+    setNoteEditorDirty(false);
+    handleStartAddNote();
+  };
+
   const handleStartEditNote = (note: Note) => {
     draftNoteIdRef.current = null;
     setEditingNote(note);
@@ -745,10 +756,12 @@ export default function App() {
           onAutoSave={handleAutoSaveNote}
           onUploadImage={archiveUser ? (file) => uploadMemoImage(archiveUser.uid, file) : undefined}
           onCancel={() => {
+            setNoteEditorDirty(false);
             draftNoteIdRef.current = null;
             setPrefilledDate(null);
             setScreen('DASHBOARD');
           }}
+          onDirtyChange={setNoteEditorDirty}
         />
       )}
 
@@ -833,7 +846,7 @@ export default function App() {
               setScreen('CALENDAR');
               setCreateScheduleRequested(true);
             }}
-            onAddNote={() => handleStartAddNote()}
+            onAddNote={handleSidebarAddNote}
             totalNotesCount={notes.filter(n => !n.isDeleted).length}
             profileImage={profileImage}
             onOpenArchive={() => setScreen('ARCHIVE')}

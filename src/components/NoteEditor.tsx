@@ -20,6 +20,7 @@ interface NoteEditorProps {
   onAutoSave?: (noteData: Partial<Note>) => void;
   onUploadImage?: (file: File) => Promise<string>;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export default function NoteEditor({
@@ -28,7 +29,8 @@ export default function NoteEditor({
   onSave,
   onAutoSave,
   onUploadImage,
-  onCancel
+  onCancel,
+  onDirtyChange,
 }: NoteEditorProps) {
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
@@ -64,7 +66,12 @@ export default function NoteEditor({
   useEffect(() => {
     initialSnapshotRef.current = autoSaveSnapshot;
     lastAutoSavedSnapshotRef.current = autoSaveSnapshot;
+    onDirtyChange?.(false);
   }, [note?.id]);
+
+  useEffect(() => {
+    onDirtyChange?.(autoSaveSnapshot !== initialSnapshotRef.current);
+  }, [autoSaveSnapshot, onDirtyChange]);
 
   useEffect(() => {
     if (!onAutoSave) return;
