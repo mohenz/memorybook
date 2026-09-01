@@ -91,15 +91,24 @@ export function subscribeArchiveAccount(onUser: (user: ArchiveAccount | null) =>
   }
 
   let emittedUserId: string | null | undefined;
+  let pendingNotification: ReturnType<typeof setTimeout> | undefined;
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     const user = session?.user;
     const nextUserId = user?.id || null;
     if (!shouldEmitArchiveAccountChange(event, emittedUserId, nextUserId)) return;
 
     emittedUserId = nextUserId;
-    onUser(user ? { uid: user.id, email: user.email || null } : null);
+    // Supabase advises keeping auth callbacks synchronous. Deferring consumers also
+    // lets the client finish installing a refreshed access token before DB reads.
+    if (pendingNotification) clearTimeout(pendingNotification);
+    pendingNotification = setTimeout(() => {
+      onUser(user ? { uid: user.id, email: user.email || null } : null);
+    }, 0);
   });
-  return () => data.subscription.unsubscribe();
+  return () => {
+    if (pendingNotification) clearTimeout(pendingNotification);
+    data.subscription.unsubscribe();
+  };
 }
 
 export async function loginArchiveAccount(email: string, password: string) {
@@ -316,13 +325,21 @@ export async function loadMemoCloudState(userId: string): Promise<Partial<MemoCl
   if (!isSupabaseConfigured || !supabase) return null;
   const client = supabase;
 
-  const [usersRes, groupsRes, notesRes, schedulesRes, todosRes] = await Promise.all([
+  const fetchRows = () => Promise.all([
     client.from('users').select('dark_mode, profile_image, notification_settings').eq('id', userId).maybeSingle(),
     client.from('groups').select('id, name, icon, position').eq('user_id', userId).order('position', { ascending: true }),
     client.from('notes').select('id, group_id, title, content, date_string, is_favorite, is_deleted, images, checklist, created_at, updated_at').eq('user_id', userId),
     client.from('schedules').select('id, title, date_string, all_day, start_time, end_time, priority, memo, recurrence, reminder, is_deleted, created_at, updated_at').eq('user_id', userId),
     client.from('todos').select('id, text, status, created_date_string, target_date_string, created_at, updated_at').eq('user_id', userId),
   ]);
+
+  let results = await fetchRows();
+  if (results.some((result) => result.error?.code === 'PGRST303')) {
+    const { error: refreshError } = await client.auth.refreshSession();
+    if (!refreshError) results = await fetchRows();
+  }
+
+  const [usersRes, groupsRes, notesRes, schedulesRes, todosRes] = results;
 
   if (usersRes.error) throw cloudSyncError('users', usersRes.error);
   if (groupsRes.error) throw cloudSyncError('groups', groupsRes.error);
