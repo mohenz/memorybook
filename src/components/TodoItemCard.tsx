@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { CalendarClock, Pencil, Save, Trash2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { TodoItem, TodoStatus } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { getRemainingDayLabel } from '../utils/todos';
 import TodoStatusControl from './TodoStatusControl';
+import MemoryIcon from './MemoryIcon';
 
 interface TodoItemCardProps {
   key?: string;
@@ -57,7 +58,7 @@ export default function TodoItemCard({ todo, accentClass, onUpdate, onDelete, on
               <X className="h-3.5 w-3.5" /> 취소
             </button>
             <button type="button" onClick={save} disabled={!text.trim()} className="flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-xs font-bold text-white disabled:opacity-40 cursor-pointer">
-              <Save className="h-3.5 w-3.5" /> 저장
+              <MemoryIcon name="completed" className="h-3.5 w-3.5" /> 저장
             </button>
           </div>
         </div>
@@ -69,7 +70,7 @@ export default function TodoItemCard({ todo, accentClass, onUpdate, onDelete, on
             </p>
             <div className="flex shrink-0 items-center gap-1">
               <button type="button" onClick={() => setEditing(true)} aria-label={`${todo.text} 수정`} className="rounded-lg p-1.5 text-outline hover:bg-surface-container hover:text-primary cursor-pointer">
-                <Pencil className="h-3.5 w-3.5" />
+                <MemoryIcon name="edit" className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
@@ -79,7 +80,7 @@ export default function TodoItemCard({ todo, accentClass, onUpdate, onDelete, on
                 aria-label={`${todo.text} 삭제`}
                 className="rounded-lg p-1.5 text-outline hover:bg-error/10 hover:text-error cursor-pointer"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <MemoryIcon name="delete" className="h-3.5 w-3.5" accentColor="currentColor" />
               </button>
             </div>
           </div>
@@ -87,7 +88,7 @@ export default function TodoItemCard({ todo, accentClass, onUpdate, onDelete, on
             <span>등록 {todo.createdDateString}</span>
             {todo.targetDateString && (
               <span className="flex items-center gap-1">
-                <CalendarClock className="h-3.5 w-3.5" />
+                <MemoryIcon name="calendar" className="h-3.5 w-3.5" />
                 목표 {todo.targetDateString}
               </span>
             )}

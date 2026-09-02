@@ -28,6 +28,7 @@ import { Note, Group, Schedule, ScreenType, NotificationSettings, TodoItem, Todo
 import { ScheduleDraft } from './components/calendar/ScheduleFormModal';
 import { PREMIUM_IMAGES } from './data';
 import SplashView from './components/SplashView';
+import MemoryIcon from './components/MemoryIcon';
 import Sidebar from './components/Sidebar';
 import NoteDetail from './components/NoteDetail';
 import NoteEditor from './components/NoteEditor';
@@ -648,19 +649,19 @@ export default function App() {
       <div
         className="absolute inset-0 opacity-[0.035] pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(#0058be 0.5px, transparent 0.5px)',
+          backgroundImage: 'radial-gradient(#0D1B3D 0.5px, transparent 0.5px)',
           backgroundSize: '24px 24px'
         }}
       />
       <section className="relative z-10 w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-soft p-6 md:p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-soft">
-            <Cloud className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-on-background">MEMOry</h1>
-            <p className="text-xs font-semibold text-on-surface-variant mt-1">메모장과 자료실 통합 계정</p>
-          </div>
+        <div className="mb-6">
+          <h1 className="sr-only">MEMOry</h1>
+          <img
+            src="/brand/memory-logo-horizontal.svg"
+            alt="MEMOry"
+            className="h-auto w-52 max-w-full dark:rounded-xl dark:bg-white dark:p-2"
+          />
+          <p className="mt-3 text-xs font-semibold text-on-surface-variant">메모장과 자료실 통합 계정</p>
         </div>
 
         {authLoading ? (
@@ -703,7 +704,7 @@ export default function App() {
               disabled={!isSupabaseConfigured || !loginEmail.trim() || (!resetMode && !loginPassword)}
               className="w-full h-11 rounded-lg bg-primary text-white font-bold flex items-center justify-center gap-2 disabled:opacity-40"
             >
-              {resetMode ? <Lock className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+              {resetMode ? <MemoryIcon name="lock" className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
               <span>{resetMode ? '재설정 메일 보내기' : '통합 계정으로 시작'}</span>
             </button>
             <button
@@ -739,7 +740,7 @@ export default function App() {
           onClick={handleRetryCloudSync}
           className="w-full h-11 rounded-lg bg-primary text-white font-bold flex items-center justify-center gap-2"
         >
-          <RotateCcw className="w-4 h-4" />
+          <MemoryIcon name="repeat" className="w-4 h-4" />
           <span>다시 시도</span>
         </button>
       </section>
@@ -868,7 +869,7 @@ export default function App() {
                 <header className="sticky top-0 w-full flex flex-col sm:flex-row justify-between gap-3 sm:items-center px-4 md:px-8 py-3 sm:h-16 z-20 bg-background/90 backdrop-blur-md border-b border-grid-line shrink-0">
                   <div className="flex items-center gap-4 flex-1 w-full sm:max-w-xl">
                     <div className="relative w-full">
-                      <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant group-focus-within:text-primary transition-colors" />
+                      <MemoryIcon name="search" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant group-focus-within:text-primary transition-colors" />
                       <input 
                         type="text" 
                         placeholder="메모, 일정을 즉시 검색해 보세요..."
@@ -885,7 +886,7 @@ export default function App() {
                       className="hover:bg-surface rounded-full p-2.5 transition-all text-on-surface-variant cursor-pointer"
                       title="상세 태그 검색 이동"
                     >
-                      <Search className="w-5 h-5 text-primary stroke-[2.5]" />
+                      <MemoryIcon name="search" className="w-5 h-5 text-primary" />
                     </button>
                     <div className="h-8 w-[1px] bg-outline-variant/60 mx-2" />
                     
@@ -893,7 +894,7 @@ export default function App() {
                       onClick={() => handleStartAddNote()}
                       className="flex items-center gap-2 bg-primary text-white px-4 sm:px-5 py-2.5 rounded-xl shadow-soft hover:brightness-110 active:scale-95 transition-all font-semibold text-sm cursor-pointer"
                     >
-                      <Plus className="w-4.5 h-4.5 stroke-[2.5]" />
+                      <MemoryIcon name="new_memo" className="w-4.5 h-4.5" />
                       <span>추가</span>
                     </button>
                   </div>
@@ -918,7 +919,7 @@ export default function App() {
                           className="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors cursor-pointer"
                           title="정렬 방식 선택"
                         >
-                          <SlidersHorizontal className="w-4 h-4" />
+                          <MemoryIcon name="sort" className="w-4 h-4" />
                         </button>
 
                         {showDashboardSortMenu && (
@@ -950,7 +951,7 @@ export default function App() {
                       {activeGroupId === 'trash' && trashedSchedules.map((schedule) => (
                         <div key={schedule.id} className="p-4 rounded-xl shadow-soft border border-outline-variant/30 bg-surface-container-lowest flex flex-col gap-3">
                           <div className="flex items-start gap-3">
-                            <CalendarDays className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                            <MemoryIcon name="calendar" className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <div className="min-w-0 flex-1">
                               <p className="text-[10px] font-bold text-primary uppercase tracking-wider">일정</p>
                               <h3 className="font-sans text-sm font-bold text-on-surface truncate">{schedule.title}</h3>
@@ -959,17 +960,17 @@ export default function App() {
                           </div>
                           <div className="flex justify-end gap-2">
                             <button type="button" onClick={() => handleRestoreSchedule(schedule.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary hover:text-white transition-colors">
-                              <RotateCcw className="w-3.5 h-3.5" /> 복원
+                              <MemoryIcon name="repeat" className="w-3.5 h-3.5" /> 복원
                             </button>
                             <button type="button" onClick={() => handlePermanentlyDeleteSchedule(schedule.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-error/10 text-error text-xs font-bold hover:bg-error hover:text-white transition-colors">
-                              <Trash2 className="w-3.5 h-3.5" /> 영구 삭제
+                              <MemoryIcon name="delete" className="w-3.5 h-3.5" accentColor="currentColor" /> 영구 삭제
                             </button>
                           </div>
                         </div>
                       ))}
                       {filteredDashboardNotes.length === 0 && (activeGroupId !== 'trash' || trashedSchedules.length === 0) ? (
                         <div className="text-center py-20 opacity-40 select-none">
-                          <FileText className="w-10 h-10 text-outline mx-auto mb-2 stroke-[1.25]" />
+                          <MemoryIcon name="memo" className="w-10 h-10 text-outline mx-auto mb-2" />
                           <p className="text-xs font-semibold text-on-surface-variant">표시할 메모가 없습니다</p>
                           <p className="text-[10px] text-outline mt-1">오른쪽 위의 추가 버튼을 눌러 메모를 작성하세요.</p>
                         </div>
@@ -1010,7 +1011,7 @@ export default function App() {
 
                               {note.images && note.images.length > 0 && (
                                 <span className="inline-flex items-center gap-1 text-[9px] text-primary font-bold bg-primary/5 px-2 py-0.5 rounded w-max mt-1">
-                                  <ImageIcon className="w-3 h-3" />
+                                  <MemoryIcon name="image" className="w-3 h-3" />
                                   이미지 {note.images.length}장 첨부
                                 </span>
                               )}
@@ -1043,7 +1044,7 @@ export default function App() {
                   className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 bg-primary text-white rounded-xl shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30 cursor-pointer"
                   title="새 메모 작성"
                 >
-                  <Plus className="w-8 h-8 text-white stroke-[2]" />
+                  <MemoryIcon name="new_memo" className="w-8 h-8 text-white" />
                 </button>
 
               </div>

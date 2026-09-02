@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, Sun } from 'lucide-react';
+import MemoryIcon from '../../components/MemoryIcon';
 import { Schedule } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 import ScheduleFormModal, { ScheduleDraft } from '../../components/calendar/ScheduleFormModal';
@@ -218,7 +219,7 @@ export default function MobileCalendarScreen({
         {viewMode === 'all' ? (
           allSchedulesSorted.length === 0 ? (
             <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant text-center text-on-surface-variant">
-              <CalendarDays className="mb-3 h-8 w-8 text-outline" />
+              <MemoryIcon name="calendar" className="mb-3 h-8 w-8 text-outline" />
               <p className="text-sm font-bold">등록된 일정이 없습니다</p>
               <p className="mt-1 text-xs text-outline">우측 하단 버튼으로 일정을 추가하세요.</p>
             </div>
@@ -255,7 +256,7 @@ export default function MobileCalendarScreen({
           )
         ) : selectedSchedules.length === 0 ? (
           <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant text-center text-on-surface-variant">
-            <CalendarDays className="mb-3 h-8 w-8 text-outline" />
+            <MemoryIcon name="calendar" className="mb-3 h-8 w-8 text-outline" />
             <p className="text-sm font-bold">등록된 일정이 없습니다</p>
             <p className="mt-1 text-xs text-outline">아래 버튼으로 이 날짜의 일정을 추가하세요.</p>
           </div>
@@ -289,7 +290,7 @@ export default function MobileCalendarScreen({
         className="absolute bottom-4 right-4 z-20 flex h-12 items-center gap-2 rounded-2xl bg-primary px-4 text-sm font-bold text-white shadow-2xl active:scale-95"
         aria-label="새 일정"
       >
-        <Plus className="h-5 w-5" />
+        <MemoryIcon name="add_event" className="h-5 w-5" />
         <span>새 일정</span>
       </button>
 

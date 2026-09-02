@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Edit,
-  Trash2,
-  Star,
-  CheckCircle,
   MoreVertical,
-  FolderOpen,
   X,
-  RotateCcw,
   Maximize2,
   Minimize2,
 } from 'lucide-react';
 import { Note, Group, TodoItem, TodoStatus } from '../types';
 import TodoItemCard from './TodoItemCard';
+import MemoryIcon from './MemoryIcon';
 import { renderMarkdownToHtml } from '../utils/markdown';
 
 interface NoteDetailProps {
@@ -59,7 +54,7 @@ export default function NoteDetail({
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-background notebook-pattern p-8 text-center select-none">
         <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 text-on-surface-variant animate-pulse">
-          <FolderOpen className="w-8 h-8" />
+          <MemoryIcon name="folder" className="w-8 h-8" />
         </div>
         <h3 className="font-sans text-lg font-bold text-on-surface mb-1">메모가 선택되지 않았습니다</h3>
         <p className="font-sans text-sm text-text-secondary max-w-xs">
@@ -132,7 +127,7 @@ export default function NoteDetail({
           {todos.length > 0 && (
             <div className="space-y-4 my-6">
               <h4 className="font-bold text-base text-on-surface flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
+                <MemoryIcon name="checklist" className="w-5 h-5 text-primary" />
                 <span>이 날짜의 TO-DO</span>
               </h4>
               <p className="text-xs text-outline">메모 작성일과 TO-DO 등록일 또는 목표일이 같은 항목입니다.</p>
@@ -169,7 +164,7 @@ export default function NoteDetail({
             className="h-10 px-4 rounded-full bg-primary text-white flex items-center gap-2 hover:brightness-110 transition-all shadow-sm font-semibold text-sm"
             title="메모 복원"
           >
-            <RotateCcw className="w-4 h-4" />
+            <MemoryIcon name="repeat" className="w-4 h-4" />
             복원
           </button>
         ) : (
@@ -183,7 +178,7 @@ export default function NoteDetail({
               }`}
               title={note.isFavorite ? "중요 메모 해제" : "중요 메모 추가"}
             >
-              <Star className={`w-5 h-5 ${note.isFavorite ? 'fill-current' : ''}`} />
+              <MemoryIcon name="important" className="w-5 h-5" />
             </button>
 
             <button
@@ -200,7 +195,7 @@ export default function NoteDetail({
               className="w-10 h-10 rounded-full bg-surface-container-high text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all shadow-sm"
               title="수정하기"
             >
-              <Edit className="w-5 h-5" />
+              <MemoryIcon name="edit" className="w-5 h-5" />
             </button>
           </>
         )}
@@ -214,7 +209,7 @@ export default function NoteDetail({
           className="w-10 h-10 rounded-full bg-surface-container-high text-error flex items-center justify-center hover:bg-error hover:text-white transition-all shadow-sm"
           title={note.isDeleted ? "영구 삭제" : "휴지통으로 이동"}
         >
-          <Trash2 className="w-5 h-5" />
+          <MemoryIcon name="delete" className="w-5 h-5" accentColor="currentColor" />
         </button>
       </div>
 

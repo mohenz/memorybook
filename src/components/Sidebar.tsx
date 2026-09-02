@@ -1,25 +1,13 @@
 import React, { useState } from 'react';
 import { 
-  Archive, 
-  FileText, 
-  Calendar, 
-  CalendarPlus,
-  Star, 
-  Search,
-  Trash2, 
-  FolderPlus, 
-  HelpCircle, 
-  Settings, 
   Briefcase, 
   User, 
   Compass, 
-  Folder,
-  Plus,
-  ListTodo,
   LogOut
 } from 'lucide-react';
 import { Group, ScreenType } from '../types';
 import HelpModal from './HelpModal';
+import MemoryIcon from './MemoryIcon';
 
 interface SidebarProps {
   currentScreen: ScreenType;
@@ -111,7 +99,7 @@ export default function Sidebar({
       case 'Briefcase': return <Briefcase className="w-5 h-5" />;
       case 'User': return <User className="w-5 h-5" />;
       case 'Compass': return <Compass className="w-5 h-5" />;
-      default: return <Folder className="w-5 h-5" />;
+      default: return <MemoryIcon name="folder" className="w-5 h-5" />;
     }
   };
 
@@ -148,7 +136,7 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <Calendar className="w-5 h-5" />
+            <MemoryIcon name="calendar" className="w-5 h-5" />
             <span>캘린더</span>
           </button>
 
@@ -164,7 +152,7 @@ export default function Sidebar({
             }`}
           >
             <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5" />
+              <MemoryIcon name="memo" className="w-5 h-5" />
               <span>모든 메모</span>
             </div>
             <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -187,7 +175,7 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <Star className={`w-5 h-5 ${currentScreen === 'DASHBOARD' && activeGroupId === 'starred' ? 'fill-current' : ''}`} />
+            <MemoryIcon name="important" className="w-5 h-5" />
             <span>중요 메모</span>
           </button>
 
@@ -199,7 +187,7 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <ListTodo className="w-5 h-5" />
+            <MemoryIcon name="todo" className="w-5 h-5" />
             <span>TO-DO LIST</span>
           </button>
 
@@ -211,7 +199,7 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <Search className="w-5 h-5" />
+            <MemoryIcon name="search" className="w-5 h-5" />
             <span>검색</span>
           </button>
 
@@ -223,7 +211,7 @@ export default function Sidebar({
               className="p-1 rounded-md hover:bg-surface-container-high text-primary transition-colors"
               title="새 폴더 추가"
             >
-              <Plus className="w-4 h-4" />
+              <MemoryIcon name="new_folder" className="w-4 h-4" />
             </button>
           </div>
 
@@ -255,7 +243,7 @@ export default function Sidebar({
             className="min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
             title="자료실 열기"
           >
-            <Archive className="w-5 h-5" />
+            <MemoryIcon name="library" className="w-5 h-5" />
             <span>자료실</span>
           </button>
 
@@ -273,7 +261,7 @@ export default function Sidebar({
                 : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
             }`}
           >
-            <Trash2 className="w-5 h-5" />
+            <MemoryIcon name="delete" className="w-5 h-5" accentColor="currentColor" />
             <span>휴지통</span>
           </button>
         </nav>
@@ -289,7 +277,7 @@ export default function Sidebar({
             title="도움말"
             className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant"
           >
-            <HelpCircle className="w-3.5 h-3.5" />
+            <MemoryIcon name="help" className="w-3.5 h-3.5" />
           </button>
 
           <div className="flex items-center gap-1">
@@ -300,7 +288,7 @@ export default function Sidebar({
               title="일정 추가"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              <CalendarPlus className="w-3.5 h-3.5" />
+              <MemoryIcon name="add_event" className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
@@ -309,7 +297,7 @@ export default function Sidebar({
               title="메모 추가"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <MemoryIcon name="new_memo" className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
@@ -318,7 +306,7 @@ export default function Sidebar({
               title="설정 및 테마 변경"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <MemoryIcon name="settings" className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
@@ -356,7 +344,7 @@ export default function Sidebar({
             className="bg-surface-container-lowest text-on-surface p-6 rounded-2xl w-80 max-w-full shadow-2xl border border-outline-variant flex flex-col gap-4 select-text"
           >
             <h3 id="add-folder-title" className="font-bold text-lg text-on-surface flex items-center gap-2">
-              <FolderPlus className="w-5 h-5 text-primary" />
+              <MemoryIcon name="new_folder" className="w-5 h-5 text-primary" />
               <span>새 폴더 추가</span>
             </h3>
             <p className="text-xs text-on-surface-variant">

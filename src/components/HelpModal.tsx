@@ -1,17 +1,18 @@
-import { Archive, Calendar, FileText, Folder, ListTodo, Search, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import MemoryIcon, { type MemoryIconName } from './MemoryIcon';
 
 interface HelpModalProps {
   onClose: () => void;
 }
 
 const HELP_ITEMS = [
-  { icon: FileText, title: '메모', description: '새 메모를 작성하고 이미지와 체크리스트를 함께 기록할 수 있습니다.' },
-  { icon: Folder, title: '그룹', description: '메모 작성·수정 시 그룹을 선택하고 폴더별로 모아볼 수 있습니다.' },
-  { icon: Calendar, title: '캘린더', description: '월간·주간·일간 화면에서 일정을 등록하고 시간대별로 확인할 수 있습니다.' },
-  { icon: ListTodo, title: 'TO-DO LIST', description: '메모에 등록한 할 일을 예정·진행·완료 상태로 관리할 수 있습니다.' },
-  { icon: Search, title: '검색', description: '검색어와 그룹, 이미지, 즐겨찾기 조건으로 필요한 메모를 찾을 수 있습니다.' },
-  { icon: Archive, title: '자료실', description: '계정에 연결된 파일을 업로드하고 필요한 자료를 확인할 수 있습니다.' },
-];
+  { icon: 'memo', title: '메모', description: '새 메모를 작성하고 이미지와 체크리스트를 함께 기록할 수 있습니다.' },
+  { icon: 'folder', title: '그룹', description: '메모 작성·수정 시 그룹을 선택하고 폴더별로 모아볼 수 있습니다.' },
+  { icon: 'calendar', title: '캘린더', description: '월간·주간·일간 화면에서 일정을 등록하고 시간대별로 확인할 수 있습니다.' },
+  { icon: 'todo', title: 'TO-DO LIST', description: '메모에 등록한 할 일을 예정·진행·완료 상태로 관리할 수 있습니다.' },
+  { icon: 'search', title: '검색', description: '검색어와 그룹, 이미지, 즐겨찾기 조건으로 필요한 메모를 찾을 수 있습니다.' },
+  { icon: 'library', title: '자료실', description: '계정에 연결된 파일을 업로드하고 필요한 자료를 확인할 수 있습니다.' },
+] satisfies Array<{ icon: MemoryIconName; title: string; description: string }>;
 
 export default function HelpModal({ onClose }: HelpModalProps) {
   return (
@@ -34,10 +35,10 @@ export default function HelpModal({ onClose }: HelpModalProps) {
         </header>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto p-5 custom-scrollbar sm:grid-cols-2">
-          {HELP_ITEMS.map(({ icon: Icon, title, description }) => (
+          {HELP_ITEMS.map(({ icon, title, description }) => (
             <article key={title} className="rounded-2xl border border-outline-variant/40 bg-surface p-4">
               <div className="mb-2 flex items-center gap-2 text-primary">
-                <Icon className="h-4.5 w-4.5" />
+                <MemoryIcon name={icon} className="h-4.5 w-4.5" />
                 <h3 className="text-sm font-bold">{title}</h3>
               </div>
               <p className="text-xs leading-5 text-on-surface-variant">{description}</p>

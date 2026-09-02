@@ -1,16 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Search, 
   X, 
   Calendar, 
   Grid, 
   List,
   Pin,
-  CheckSquare,
-  Plus
 } from 'lucide-react';
 import { Note, Group } from '../types';
 import { stripMarkdown } from '../utils/markdown';
+import MemoryIcon from './MemoryIcon';
 
 interface SearchViewProps {
   notes: Note[];
@@ -78,7 +76,7 @@ export default function SearchView({
           {/* Custom Search Box */}
           <div className="relative group">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="w-5 h-5 text-outline" />
+              <MemoryIcon name="search" className="w-5 h-5 text-outline" />
             </div>
             <input 
               type="text" 
@@ -138,7 +136,7 @@ export default function SearchView({
           {/* Results Grid display */}
           {filteredNotes.length === 0 ? (
             <div className="text-center py-24 select-none">
-              <Search className="w-12 h-12 text-outline-variant mx-auto mb-3 stroke-[1.5]" />
+              <MemoryIcon name="search" className="w-12 h-12 text-outline-variant mx-auto mb-3" />
               <p className="text-sm font-semibold text-on-surface-variant">일치하는 메모를 찾을 수 없습니다</p>
               <p className="text-xs text-outline mt-1">다른 키워드를 입력하거나 필터 옵션을 리셋해 보세요.</p>
             </div>
@@ -201,7 +199,7 @@ export default function SearchView({
                       {/* Checklist Summary indicator */}
                       {note.checklist && note.checklist.length > 0 && (
                         <div className="flex items-center gap-1.5 text-[11px] text-primary font-semibold py-1 bg-primary/5 rounded-lg px-2 w-max">
-                          <CheckSquare className="w-3.5 h-3.5" />
+                          <MemoryIcon name="checklist" className="w-3.5 h-3.5" />
                           <span>할 일 {note.checklist.filter(c => c.done).length}/{note.checklist.length}</span>
                         </div>
                       )}
@@ -237,7 +235,7 @@ export default function SearchView({
         className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 bg-primary text-white rounded-xl shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30 cursor-pointer"
         title="새 메모 쓰기"
       >
-        <Plus className="w-8 h-8 text-white stroke-[2]" />
+        <MemoryIcon name="new_memo" className="w-8 h-8 text-white" />
       </button>
     </div>
   );

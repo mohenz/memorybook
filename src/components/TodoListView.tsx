@@ -1,10 +1,10 @@
 import { FormEvent, useState } from 'react';
-import { ListTodo, Plus } from 'lucide-react';
 import { TodoItem, TodoStatus } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { TODO_STATUS_LABELS, TODO_STATUS_ORDER } from '../utils/todoStatus';
 import { sortTodosByTargetProximity } from '../utils/todos';
 import TodoItemCard from './TodoItemCard';
+import MemoryIcon from './MemoryIcon';
 
 interface TodoListViewProps {
   todos: TodoItem[];
@@ -41,7 +41,7 @@ export default function TodoListView({ todos, onAddItem, onUpdateItem, onDeleteI
       <header className="sticky top-0 w-full z-20 bg-background/80 backdrop-blur-md px-4 md:px-10 py-5 md:py-6 border-b border-grid-line shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <span className="rounded-xl bg-primary/10 p-2 text-primary shrink-0">
-            <ListTodo className="w-5 h-5" />
+            <MemoryIcon name="todo" className="w-5 h-5" />
           </span>
           <div>
             <h1 className="font-sans text-xl font-bold text-on-surface">TO-DO LIST</h1>
@@ -73,7 +73,7 @@ export default function TodoListView({ todos, onAddItem, onUpdateItem, onDeleteI
                       className="h-9 min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface px-3 text-xs font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <button type="submit" disabled={!newItemText.trim() || !targetDateString} className="flex h-9 shrink-0 items-center gap-1 rounded-lg bg-primary px-3 text-xs font-bold text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer">
-                      <Plus className="h-3.5 w-3.5" /> 추가
+                      <MemoryIcon name="add_todo" className="h-3.5 w-3.5" /> 추가
                     </button>
                   </div>
                   <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-on-surface-variant">

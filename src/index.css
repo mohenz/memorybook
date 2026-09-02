@@ -15,20 +15,20 @@ body,
 }
 
 @theme {
-  --color-primary: #0058be;
+  --color-primary: #0D1B3D;
   --color-on-primary: #ffffff;
-  --color-primary-container: #e6f0ff;
-  --color-on-primary-container: #004395;
-  --color-primary-fixed-dim: #adc6ff;
-  --color-primary-fixed: #d8e2ff;
-  --color-on-primary-fixed: #001a42;
+  --color-primary-container: #FFF0DD;
+  --color-on-primary-container: #6F3600;
+  --color-primary-fixed-dim: #FFD09A;
+  --color-primary-fixed: #FFF0DD;
+  --color-on-primary-fixed: #0D1B3D;
   
   --color-secondary: #5e5e5e;
   --color-secondary-container: #e1dfdf;
   --color-on-secondary-container: #626262;
 
-  --color-tertiary: #924700;
-  --color-tertiary-container: #b75b00;
+  --color-tertiary: #C65D00;
+  --color-tertiary-container: #FF8A00;
   
   --color-background: #ffffff;
   --color-on-background: #191c1e;
@@ -58,13 +58,13 @@ body,
 
 /* Dark Mode Variables Override */
 .dark {
-  --color-primary: #3b82f6;
+  --color-primary: #FF9B2F;
   --color-on-primary: #ffffff;
-  --color-primary-container: #1e293b;
-  --color-on-primary-container: #adc6ff;
-  --color-primary-fixed-dim: #3b82f6;
-  --color-primary-fixed: #1e3a8a;
-  --color-on-primary-fixed: #d8e2ff;
+  --color-primary-container: #382413;
+  --color-on-primary-container: #FFD09A;
+  --color-primary-fixed-dim: #FF9B2F;
+  --color-primary-fixed: #5C3512;
+  --color-on-primary-fixed: #FFF0DD;
 
   --color-background: #0b0f19;
   --color-on-background: #f8fafc;
@@ -137,7 +137,7 @@ body,
   }
 
   .dark .notebook-pattern {
-    background-image: linear-gradient(rgba(59, 130, 246, 0.12) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(255, 138, 0, 0.10) 1px, transparent 1px);
   }
 
   .notebook-grid {
@@ -150,8 +150,8 @@ body,
 
   .dark .notebook-grid {
     background-image: 
-      linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+      linear-gradient(rgba(255, 138, 0, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 138, 0, 0.07) 1px, transparent 1px);
   }
 
   .shadow-soft {
@@ -186,7 +186,33 @@ body,
 }
 
 .loading-bar {
-  background: linear-gradient(90deg, #f2f4f6 25%, #0058be 50%, #f2f4f6 75%);
+  background: linear-gradient(90deg, #e9edf3 20%, #0D1B3D 45%, #FF8A00 55%, #e9edf3 80%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
+}
+
+.memory-icon > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.memory-icon .a {
+  stroke: var(--memory-icon-accent);
+}
+
+.bg-primary .memory-icon .a {
+  stroke: currentColor;
+}
+
+.dark .bg-primary.text-white,
+.dark .bg-primary > .text-white {
+  color: #0D1B3D;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-scale,
+  .loading-bar {
+    animation: none;
+  }
 }

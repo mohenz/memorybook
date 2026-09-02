@@ -1,7 +1,11 @@
-const CACHE_NAME = 'personal-notes-cache-v3';
+const CACHE_NAME = 'memory-brand-cache-v4';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
-  '/icon.svg'
+  '/favicon.svg',
+  '/icons/memory-app-light.svg',
+  '/icons/memory-app-dark.svg',
+  '/brand/memory-splash.png',
+  '/brand/memory-logo-horizontal.svg'
 ];
 
 // Install Event

@@ -1,18 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { 
   ArrowLeft, 
-  Clipboard,
-  Save, 
-  Image as ImageIcon, 
   MoreVertical, 
   X, 
-  Upload,
-  FolderOpen
 } from 'lucide-react';
 import { Note, Group } from '../types';
 import { PREMIUM_IMAGES } from '../data';
 import GroupButtonSelector from './GroupButtonSelector';
 import MarkdownToolbar from './MarkdownToolbar';
+import MemoryIcon from './MemoryIcon';
 
 interface NoteEditorProps {
   note: Note | null; // null if creating a new note
@@ -206,7 +202,7 @@ export default function NoteEditor({
             onClick={handleSave}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:brightness-115 active:scale-95 transition-all text-sm font-semibold shadow-soft cursor-pointer shrink-0"
           >
-            <Save className="w-4 h-4" />
+            <MemoryIcon name="completed" className="w-4 h-4" />
             <span>저장</span>
           </button>
 
@@ -215,7 +211,7 @@ export default function NoteEditor({
             className="hover:bg-surface-container rounded-full p-2 transition-all text-on-surface-variant cursor-pointer"
             title="이미지 첨부"
           >
-            <ImageIcon className="w-5 h-5" />
+            <MemoryIcon name="image" className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -240,7 +236,7 @@ export default function NoteEditor({
           <div className="border-t border-grid-line pt-6">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-outline">
-                <ImageIcon className="h-4.5 w-4.5 text-primary" />
+                <MemoryIcon name="image" className="h-4.5 w-4.5 text-primary" />
                 <span>파일 첨부</span>
               </h4>
               <span className="text-xs font-medium text-outline" aria-live="polite">
@@ -256,7 +252,7 @@ export default function NoteEditor({
                 title="이미지 추가"
                 aria-label="첨부 이미지 추가"
               >
-                <ImageIcon className="h-5 w-5 stroke-[1.5]" />
+                <MemoryIcon name="image" className="h-5 w-5" />
                 <span className="mt-1 text-[10px] font-bold">첨부</span>
               </button>
 
@@ -301,7 +297,7 @@ export default function NoteEditor({
           >
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-on-surface flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-primary" />
+                <MemoryIcon name="image" className="w-5 h-5 text-primary" />
                 <span>디지털 스테이셔너리 에셋 추가</span>
               </h3>
               <button 
@@ -317,7 +313,7 @@ export default function NoteEditor({
             </p>
 
             <label className="border-2 border-dashed border-outline-variant rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-primary cursor-pointer hover:bg-primary/5 transition-colors">
-              <Upload className="w-5 h-5" />
+              <MemoryIcon name="upload" className="w-5 h-5" />
               <span className="text-xs font-bold">자료실 Storage에 이미지 업로드</span>
               <input
                 type="file"
@@ -332,7 +328,7 @@ export default function NoteEditor({
               className="border border-outline-variant rounded-xl p-4 flex items-center justify-center gap-2 text-primary hover:bg-primary/5 transition-colors font-bold text-xs"
               title="클립보드 이미지를 업로드합니다. Ctrl+V로도 붙여넣을 수 있습니다."
             >
-              <Clipboard className="w-5 h-5" />
+              <MemoryIcon name="attachment" className="w-5 h-5" />
               <span>클립보드 이미지 업로드</span>
             </button>
             {uploadStatus && <p className="text-xs font-semibold text-primary">{uploadStatus}</p>}

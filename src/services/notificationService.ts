@@ -95,7 +95,7 @@ export class NotificationService {
       if (canNotify()) {
         new Notification(`⏰ ${schedule.title}`, {
           body: schedule.allDay ? '오늘 종일 일정이 있습니다.' : `${schedule.startTime || ''} 일정이 있습니다.`,
-          icon: '/icon.svg',
+          icon: '/icons/memory-app-light.svg',
           tag: `schedule-${schedule.id}`,
         });
       }
@@ -109,7 +109,7 @@ export class NotificationService {
     this.setTimer('digest:daily', fireAt, () => {
       const today = toLocalDateString();
       const count = schedules.filter((schedule) => scheduleOccursOnDate(schedule, today)).length;
-      if (canNotify()) new Notification('MEMOry 오늘의 일정', { body: count ? `오늘 일정이 ${count}개 있습니다.` : '오늘 예정된 일정이 없습니다.', icon: '/icon.svg', tag: 'memory-daily-digest' });
+      if (canNotify()) new Notification('MEMOry 오늘의 일정', { body: count ? `오늘 일정이 ${count}개 있습니다.` : '오늘 예정된 일정이 없습니다.', icon: '/icons/memory-app-light.svg', tag: 'memory-daily-digest' });
       this.timers.delete('digest:daily');
       this.scheduleDailyDigest(schedules, time, new Date());
     });
@@ -121,7 +121,7 @@ export class NotificationService {
       const start = new Date();
       const count = Array.from({ length: 7 }, (_, offset) => toLocalDateString(addLocalDays(start, offset)))
         .reduce((total, dateString) => total + schedules.filter((schedule) => scheduleOccursOnDate(schedule, dateString)).length, 0);
-      if (canNotify()) new Notification('MEMOry 이번 주 일정', { body: `앞으로 7일간 일정이 ${count}개 있습니다.`, icon: '/icon.svg', tag: 'memory-weekly-digest' });
+      if (canNotify()) new Notification('MEMOry 이번 주 일정', { body: `앞으로 7일간 일정이 ${count}개 있습니다.`, icon: '/icons/memory-app-light.svg', tag: 'memory-weekly-digest' });
       this.timers.delete('digest:weekly');
       this.scheduleWeeklyDigest(schedules, dayOfWeek, time, new Date());
     });

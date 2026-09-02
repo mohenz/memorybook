@@ -8,6 +8,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import MemoryIcon from '../../components/MemoryIcon';
 import MobileEmptyState from '../components/MobileEmptyState';
 import { formatBytes } from '../../archiveStore/core/fileTypes.js';
 
@@ -113,7 +114,7 @@ export default function MobileFileListScreen({
               className="w-11 h-11 flex items-center justify-center rounded-full text-primary hover:bg-surface-container"
               aria-label="파일 검색"
             >
-              <Search className="w-5 h-5 stroke-[2.5]" />
+              <MemoryIcon name="search" className="w-5 h-5" />
             </button>
           </>
         )}
@@ -178,7 +179,7 @@ export default function MobileFileListScreen({
         className="absolute bottom-4 right-4 z-20 w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-2xl active:scale-95 transition-transform cursor-pointer"
         aria-label="파일 업로드"
       >
-        <Upload className="w-6 h-6" />
+        <MemoryIcon name="upload" className="w-6 h-6" />
         <input
           type="file"
           className="hidden"

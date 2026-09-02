@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarPlus, ChevronLeft, ChevronRight, List, Search } from 'lucide-react';
+import MemoryIcon from './MemoryIcon';
 import { Group, Note, Schedule, TodoItem } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { koreanHolidays } from '../features/holidays/koreanHolidays.generated';
@@ -194,7 +195,7 @@ export default function CalendarView({
           </div>
 
           <div className="relative w-48 shrink-0">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-outline" />
+            <MemoryIcon name="search" className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-outline" />
             <input
               type="search"
               aria-label="캘린더 일정 검색"
@@ -210,7 +211,7 @@ export default function CalendarView({
             onClick={() => setScheduleModal({ mode: 'create', dateString: selectedDateString, startTime: '09:00' })}
             className="flex h-8 shrink-0 items-center gap-1 rounded-xl bg-primary px-3 text-[11px] font-bold text-white shadow-soft transition-all hover:brightness-110 active:scale-95 cursor-pointer"
           >
-            <CalendarPlus className="h-3.5 w-3.5" />
+            <MemoryIcon name="add_event" className="h-3.5 w-3.5" />
             <span>새 일정</span>
           </button>
       </header>

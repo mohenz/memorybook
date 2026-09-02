@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Sun, Moon, Check, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
+import MemoryIcon from './MemoryIcon';
 import { Group, NotificationSettings } from '../types';
 
 const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -60,7 +61,7 @@ function FolderRenameRow({ group, priority, onRename, onMoveUp, onMoveDown, disa
       <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
         {priority}
       </span>
-      <Folder className="w-4 h-4 text-primary shrink-0" />
+      <MemoryIcon name="folder" className="w-4 h-4 text-primary shrink-0" />
       <input
         type="text"
         aria-label={`${group.name} 폴더 이름`}
@@ -203,7 +204,7 @@ export default function SettingsModal({
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Folder className="w-4 h-4 shrink-0" />
+            <MemoryIcon name="folder" className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">폴더</span>
           </button>
           <button
@@ -216,7 +217,7 @@ export default function SettingsModal({
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            <Bell className="w-4 h-4 shrink-0" />
+            <MemoryIcon name="reminder" className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">알림</span>
           </button>
           <button
@@ -291,7 +292,7 @@ export default function SettingsModal({
                   <div className={`p-3 rounded-full transition-transform ${
                     dragOver ? 'bg-primary/20 text-primary scale-110' : 'bg-primary/10 text-primary dark:bg-primary/20 group-hover:scale-110'
                   }`}>
-                    <Upload className="w-5 h-5" />
+                    <MemoryIcon name="upload" className="w-5 h-5" />
                   </div>
                   
                   <div className="text-center">
@@ -388,7 +389,7 @@ export default function SettingsModal({
                       onClick={onInstall}
                       className="flex items-center gap-1.5 bg-primary text-white text-xs px-4 py-2.5 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-soft shrink-0 cursor-pointer"
                     >
-                      <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <MemoryIcon name="download" className="w-3.5 h-3.5" />
                       <span>앱 설치</span>
                     </button>
                   </div>
@@ -413,7 +414,7 @@ export default function SettingsModal({
 
               {groups.length === 0 ? (
                 <div className="text-center py-10 opacity-50">
-                  <Folder className="w-8 h-8 text-outline mx-auto mb-2 stroke-[1.25]" />
+                  <MemoryIcon name="folder" className="w-8 h-8 text-outline mx-auto mb-2" />
                   <p className="text-xs font-semibold text-on-surface-variant">등록된 폴더가 없습니다.</p>
                 </div>
               ) : (
