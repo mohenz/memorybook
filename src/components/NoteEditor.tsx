@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { 
-  ArrowLeft, 
-  MoreVertical, 
-  X, 
+import {
+  ArrowLeft,
+  MoreVertical,
 } from 'lucide-react';
 import { Note, Group } from '../types';
-import { PREMIUM_IMAGES } from '../data';
 import GroupButtonSelector from './GroupButtonSelector';
 import MarkdownToolbar from './MarkdownToolbar';
 import MemoryIcon from './MemoryIcon';
@@ -15,7 +13,6 @@ interface NoteEditorProps {
   groups: Group[];
   onSave: (noteData: Partial<Note>) => void;
   onAutoSave?: (noteData: Partial<Note>) => void;
-  onUploadImage?: (file: File) => Promise<string>;
   onCancel: () => void;
   onDirtyChange?: (dirty: boolean) => void;
 }
@@ -25,16 +22,13 @@ export default function NoteEditor({
   groups,
   onSave,
   onAutoSave,
-  onUploadImage,
   onCancel,
   onDirtyChange,
 }: NoteEditorProps) {
   const [title, setTitle] = useState(note?.title || '');
   const [content, setContent] = useState(note?.content || '');
   const [groupId, setGroupId] = useState(note?.groupId || groups[0]?.id || 'personal');
-  const [images, setImages] = useState<string[]>(note?.images || []);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
+  const images = note?.images || [];
   const initialSnapshotRef = useRef('');
   const lastAutoSavedSnapshotRef = useRef('');
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -89,89 +83,6 @@ export default function NoteEditor({
     onSave(buildNotePayload());
   };
 
-  const handleAddImage = (url: string) => {
-    if (!images.includes(url)) {
-      setImages(currentImages => [...currentImages, url]);
-    }
-    setShowImagePicker(false);
-  };
-
-  const handleUploadImageFile = async (file: File | undefined) => {
-    if (!file) return;
-    if (!onUploadImage) {
-      setUploadStatus('자료실 계정 로그인 후 Supabase Storage에 업로드할 수 있습니다.');
-      return;
-    }
-
-    setUploadStatus('자료실 Storage에 업로드하는 중입니다.');
-    try {
-      const url = await onUploadImage(file);
-      handleAddImage(url);
-      setUploadStatus('자료실 Storage에 업로드했습니다.');
-    } catch (error) {
-      setUploadStatus(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
-    }
-  };
-
-  const buildClipboardImageFile = (blob: Blob) => {
-    const extension = blob.type.split('/')[1]?.replace('jpeg', 'jpg') || 'png';
-    return new File([blob], `clipboard-image-${Date.now()}.${extension}`, {
-      type: blob.type || 'image/png'
-    });
-  };
-
-  const uploadClipboardBlob = async (blob: Blob | null) => {
-    if (!blob || !blob.type.startsWith('image/')) {
-      setUploadStatus('클립보드에서 이미지 파일을 찾을 수 없습니다.');
-      return;
-    }
-
-    await handleUploadImageFile(buildClipboardImageFile(blob));
-  };
-
-  const handleUploadClipboardImage = async () => {
-    if (!navigator.clipboard?.read) {
-      setUploadStatus('이 브라우저에서는 클립보드 이미지 읽기를 지원하지 않습니다. Ctrl+V 붙여넣기를 사용해 주세요.');
-      return;
-    }
-
-    setUploadStatus('클립보드 이미지를 확인하는 중입니다.');
-    try {
-      const clipboardItems = await navigator.clipboard.read();
-      for (const item of clipboardItems) {
-        const imageType = item.types.find(type => type.startsWith('image/'));
-        if (imageType) {
-          await uploadClipboardBlob(await item.getType(imageType));
-          return;
-        }
-      }
-      setUploadStatus('클립보드에서 이미지 파일을 찾을 수 없습니다.');
-    } catch (error) {
-      setUploadStatus(error instanceof Error ? error.message : '클립보드 이미지를 읽지 못했습니다. 브라우저 권한을 확인해 주세요.');
-    }
-  };
-
-  const handlePasteImage = async (event: React.ClipboardEvent<HTMLDivElement>) => {
-    const pastedFiles = Array.from(event.clipboardData.files) as File[];
-    const imageFile = pastedFiles.find(file => file.type.startsWith('image/'));
-    if (imageFile) {
-      event.preventDefault();
-      await handleUploadImageFile(imageFile);
-      return;
-    }
-
-    const pastedItems = Array.from(event.clipboardData.items) as DataTransferItem[];
-    const imageItem = pastedItems.find(item => item.type.startsWith('image/'));
-    if (imageItem) {
-      event.preventDefault();
-      await uploadClipboardBlob(imageItem.getAsFile());
-    }
-  };
-
-  const handleRemoveImage = (url: string) => {
-    setImages(currentImages => currentImages.filter(img => img !== url));
-  };
-
   return (
     <section className="flex-1 bg-background flex flex-col overflow-hidden h-full relative">
       
@@ -205,14 +116,6 @@ export default function NoteEditor({
             <MemoryIcon name="completed" className="w-4 h-4" />
             <span>저장</span>
           </button>
-
-          <button 
-            onClick={() => setShowImagePicker(true)}
-            className="hover:bg-surface-container rounded-full p-2 transition-all text-on-surface-variant cursor-pointer"
-            title="이미지 첨부"
-          >
-            <MemoryIcon name="image" className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </header>
@@ -232,183 +135,8 @@ export default function NoteEditor({
             onChange={(e) => setContent(e.target.value)}
           />
 
-          {/* Attachments stay in the document flow so they never cover editor controls. */}
-          <div className="border-t border-grid-line pt-6">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-outline">
-                <MemoryIcon name="image" className="h-4.5 w-4.5 text-primary" />
-                <span>파일 첨부</span>
-              </h4>
-              <span className="text-xs font-medium text-outline" aria-live="polite">
-                {images.length}개
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-xl border border-outline-variant/30 bg-surface/70 p-3">
-              <button
-                type="button"
-                onClick={() => setShowImagePicker(true)}
-                className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-high text-primary transition-colors hover:border-primary hover:bg-surface-container-highest focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                title="이미지 추가"
-                aria-label="첨부 이미지 추가"
-              >
-                <MemoryIcon name="image" className="h-5 w-5" />
-                <span className="mt-1 text-[10px] font-bold">첨부</span>
-              </button>
-
-              {images.length === 0 ? (
-                <p className="flex-1 text-xs font-medium text-outline">
-                  첨부된 사진이 없습니다. 필요할 때 이미지를 추가하세요.
-                </p>
-              ) : (
-                <div className="flex flex-1 gap-3 overflow-x-auto py-1 no-scrollbar" aria-label="첨부 이미지 목록">
-                  {images.map((imgUrl, index) => (
-                    <div key={imgUrl} className="group relative shrink-0">
-                      <img
-                        src={imgUrl}
-                        alt={`첨부 이미지 ${index + 1}`}
-                        className="h-14 w-14 rounded-xl border border-outline-variant object-cover shadow-sm"
-                        referrerPolicy="no-referrer"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(imgUrl)}
-                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-error text-white shadow-md transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2"
-                        aria-label={`첨부 이미지 ${index + 1} 제거`}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
         </div>
       </div>
-
-      {/* Premium Digital Stationery Asset Selector Modal */}
-      {showImagePicker && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in-scale">
-          <div
-            className="bg-white p-6 rounded-xl w-[480px] max-w-[calc(100vw-2rem)] shadow-2xl border border-outline-variant flex flex-col gap-4"
-            onPaste={handlePasteImage}
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg text-on-surface flex items-center gap-2">
-                <MemoryIcon name="image" className="w-5 h-5 text-primary" />
-                <span>디지털 스테이셔너리 에셋 추가</span>
-              </h3>
-              <button 
-                onClick={() => setShowImagePicker(false)}
-                className="text-on-surface-variant hover:bg-surface rounded-full p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <p className="text-xs text-on-surface-variant">
-              이 메모와 어울리는 고해상도 디자인 라이브러리 일러스트를 선택하여 노트를 더욱 아름답게 장식하세요.
-            </p>
-
-            <label className="border-2 border-dashed border-outline-variant rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-primary cursor-pointer hover:bg-primary/5 transition-colors">
-              <MemoryIcon name="upload" className="w-5 h-5" />
-              <span className="text-xs font-bold">자료실 Storage에 이미지 업로드</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => handleUploadImageFile(event.target.files?.[0])}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={handleUploadClipboardImage}
-              className="border border-outline-variant rounded-xl p-4 flex items-center justify-center gap-2 text-primary hover:bg-primary/5 transition-colors font-bold text-xs"
-              title="클립보드 이미지를 업로드합니다. Ctrl+V로도 붙여넣을 수 있습니다."
-            >
-              <MemoryIcon name="attachment" className="w-5 h-5" />
-              <span>클립보드 이미지 업로드</span>
-            </button>
-            {uploadStatus && <p className="text-xs font-semibold text-primary">{uploadStatus}</p>}
-
-            <div className="grid grid-cols-3 gap-3 overflow-y-auto max-h-[300px] p-1 custom-scrollbar">
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.jejuSunset)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.jejuSunset})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">제주 노을 해변</span>
-              </button>
-
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.jejuDesk)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.jejuDesk})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">여행자 데스크</span>
-              </button>
-
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.office)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.office})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">미니멀 워크스페이스</span>
-              </button>
-
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.gridPaper)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.gridPaper})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">태블릿 펜 & 그리드</span>
-              </button>
-
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.azureGradients)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.azureGradients})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">아쿠아 그래디언트</span>
-              </button>
-
-              <button 
-                onClick={() => handleAddImage(PREMIUM_IMAGES.moodBoard)}
-                className="border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:scale-[1.02] hover:border-primary transition-all text-left flex flex-col cursor-pointer"
-              >
-                <div className="h-16 w-full bg-cover bg-center" style={{ backgroundImage: `url(${PREMIUM_IMAGES.moodBoard})` }} />
-                <span className="p-1.5 text-[10px] font-bold text-on-surface-variant truncate">뮤티드 무드보드</span>
-              </button>
-            </div>
-
-            <div className="border-t border-grid-line pt-3 flex flex-col gap-2">
-              <span className="text-[10px] font-bold text-outline uppercase tracking-wider">직접 이미지 URL 입력</span>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  id="custom-img-url"
-                  placeholder="https://example.com/image.jpg"
-                  className="flex-1 h-9 px-2 text-xs border border-outline-variant rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-medium"
-                />
-                <button 
-                  onClick={() => {
-                    const el = document.getElementById('custom-img-url') as HTMLInputElement;
-                    if (el && el.value.trim()) {
-                      handleAddImage(el.value.trim());
-                      el.value = '';
-                    }
-                  }}
-                  className="bg-primary text-white text-xs px-3 rounded-lg hover:brightness-110 active:scale-95 transition-all font-semibold cursor-pointer"
-                >
-                  추가
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

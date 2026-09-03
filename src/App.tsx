@@ -58,7 +58,6 @@ import {
   upsertNote,
   upsertSchedule,
   upsertTodo,
-  uploadMemoImage,
   uploadMemoProfileImage,
 } from './services/archiveIntegration';
 import { isSupabaseConfigured } from './supabase/client';
@@ -756,7 +755,6 @@ export default function App() {
           groups={groups}
           onSave={handleSaveNote}
           onAutoSave={handleAutoSaveNote}
-          onUploadImage={archiveUser ? (file) => uploadMemoImage(archiveUser.uid, file) : undefined}
           onCancel={() => {
             setNoteEditorDirty(false);
             draftNoteIdRef.current = null;
