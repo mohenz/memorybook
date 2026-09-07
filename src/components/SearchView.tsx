@@ -209,16 +209,6 @@ export default function SearchView({
                         <span className="text-[10px] text-outline font-semibold">
                           {note.createdAt}
                         </span>
-                        
-                        {/* Interactive decorative contributors badge circles */}
-                        <div className="flex -space-x-1.5">
-                          <div className="w-6 h-6 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[9px] text-blue-600 font-bold select-none shadow-xs">
-                            SY
-                          </div>
-                          <div className="w-6 h-6 rounded-full border-2 border-white bg-green-100 flex items-center justify-center text-[9px] text-green-600 font-bold select-none shadow-xs">
-                            HJ
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
