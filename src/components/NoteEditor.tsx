@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ArrowLeft,
-  MoreVertical,
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Note, Group } from '../types';
 import GroupButtonSelector from './GroupButtonSelector';
 import MarkdownToolbar from './MarkdownToolbar';
@@ -84,7 +81,7 @@ export default function NoteEditor({
   };
 
   return (
-    <section className="flex-1 bg-background flex flex-col overflow-hidden h-full relative">
+    <section className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background">
       
       {/* Editor Top App Bar */}
       <header className="sticky top-0 w-full flex flex-col gap-3 px-4 md:px-6 py-3 z-20 bg-background/95 backdrop-blur-md border-b border-grid-line shadow-sm">
@@ -121,14 +118,14 @@ export default function NoteEditor({
       </header>
 
       {/* Main Notebook Grid Canvas */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar notebook-grid p-3 md:p-4">
-        <div className="w-full min-h-full max-w-none mx-auto space-y-6 bg-surface-container-lowest/80 backdrop-blur-xs p-5 md:p-8 rounded-xl border border-outline-variant/30 shadow-soft">
+      <div className="custom-scrollbar notebook-grid flex min-h-0 flex-1 flex-col overflow-y-auto p-3 md:p-4">
+        <div className="mx-auto flex min-h-full w-full max-w-none flex-1 flex-col gap-6 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/80 p-5 shadow-soft backdrop-blur-xs md:p-8">
           
           {/* Core Content Textarea */}
           <MarkdownToolbar textareaRef={contentTextareaRef} value={content} onChange={setContent} />
           <textarea
             ref={contentTextareaRef}
-            className="w-full min-h-[40vh] md:min-h-[calc(100vh-360px)] bg-transparent border-none focus:outline-none focus:ring-0 p-0 text-on-surface font-sans text-base leading-8 resize-y"
+            className="min-h-[40vh] w-full flex-1 resize-none border-none bg-transparent p-0 font-sans text-base leading-8 text-on-surface focus:outline-none focus:ring-0"
             placeholder="여기에 내용을 입력하세요..."
             style={{ lineHeight: '28px' }}
             value={content}
