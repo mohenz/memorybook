@@ -1036,14 +1036,18 @@ export default function App() {
 
                 </div>
 
-                {/* Floating Action Button (FAB) on Dashboard screen */}
-                <button 
-                  onClick={() => handleStartAddNote()}
-                  className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 bg-primary text-white rounded-xl shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30 cursor-pointer"
-                  title="새 메모 작성"
-                >
-                  <MemoryIcon name="new_memo" className="w-8 h-8 text-white" />
-                </button>
+                {/* Floating edit action for the selected active note */}
+                {selectedNote && !selectedNote.isDeleted && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEditNote(selectedNote)}
+                    className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 bg-primary text-white rounded-xl shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30 cursor-pointer"
+                    title="선택한 메모 수정"
+                    aria-label="선택한 메모 수정"
+                  >
+                    <MemoryIcon name="edit" className="w-8 h-8 text-white" />
+                  </button>
+                )}
 
               </div>
             )}
