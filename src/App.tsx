@@ -64,6 +64,7 @@ import { isSupabaseConfigured } from './supabase/client';
 import { resolveNoteTitle } from './utils/autoTitle';
 import { stripMarkdown } from './utils/markdown';
 import { toLocalDateString } from './utils/date';
+import { isStandaloneDisplay } from './utils/displayMode';
 import { useSchedulePopup } from './hooks/useSchedulePopup';
 import { useNotification } from './hooks/useNotification';
 import { getTodosForDate, migrateLegacyChecklistItems } from './utils/todos';
@@ -111,6 +112,9 @@ const SCREEN_TO_MOBILE_TAB: Partial<Record<ScreenType, MobileTab>> = {
 
 function getInitialScreen(): ScreenType {
   if (typeof window === 'undefined') return 'SPLASH';
+  // Installed PWAs already receive a platform launch screen. Avoid following it
+  // with the in-app splash, while preserving the splash for regular browser tabs.
+  if (isStandaloneDisplay(window)) return 'CALENDAR';
   if (window.sessionStorage.getItem(SPLASH_SESSION_KEY) === '1') return 'CALENDAR';
   window.sessionStorage.setItem(SPLASH_SESSION_KEY, '1');
   return 'SPLASH';

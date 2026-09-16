@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memory-brand-cache-v4';
+const CACHE_NAME = 'memory-brand-cache-v5';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.svg',
