@@ -9,6 +9,7 @@ import { ScheduleDraft } from '../components/calendar/ScheduleFormModal';
 import TodoListView from '../components/TodoListView';
 import MobileCalendarScreen from './screens/MobileCalendarScreen';
 import SearchView from '../components/SearchView';
+import BookmarkView from '../features/bookmarks/BookmarkView';
 import { useArchiveFiles } from '../archiveStore/features/archive/useArchiveFiles.js';
 import { useArchiveMutations } from '../archiveStore/features/archive/useArchiveMutations.js';
 import { getTodosForDate } from '../utils/todos';
@@ -203,6 +204,8 @@ export default function MobileAppShell({
           onAddNote={onAddNote}
         />
       )}
+
+      {activeTab === 'BOOKMARKS' && <BookmarkView key={userId} userId={userId} />}
 
       <MobileBottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
     </div>

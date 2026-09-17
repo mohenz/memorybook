@@ -8,6 +8,7 @@ const configPath = path.join(root, 'config', 'memorybook.cfg');
 const migrationFiles = [
   '202608050001_initial_memorybook.sql',
   '202608241200_normalize_memo_tables.sql',
+  '202609170001_bookmarks.sql',
 ].map((file) => path.join(root, 'supabase', 'migrations', file));
 
 function decode(value) {
@@ -96,7 +97,10 @@ async function backupRest() {
 
 async function migrate(client) {
   const applied = [];
-  for (const migrationPath of migrationFiles) {
+  const selected = process.argv[3];
+  const selectedFiles = selected ? migrationFiles.filter((file) => path.basename(file) === selected) : migrationFiles;
+  if (!selectedFiles.length) throw new Error('등록되지 않은 마이그레이션입니다.');
+  for (const migrationPath of selectedFiles) {
     const sql = await fs.readFile(migrationPath, 'utf8');
     await client.query('begin');
     try {
@@ -111,7 +115,7 @@ async function migrate(client) {
   console.log(JSON.stringify({ migrations: applied, applied: true }));
 }
 
-const NORMALIZED_TABLES = ['users', 'groups', 'notes', 'schedules', 'todos'];
+const NORMALIZED_TABLES = ['users', 'groups', 'notes', 'schedules', 'todos', 'common_codes', 'bookmarks'];
 
 async function verify(client) {
   const allTables = ['memo_states', 'archive_files', ...NORMALIZED_TABLES];
@@ -132,8 +136,38 @@ async function verify(client) {
   console.log(JSON.stringify({ tables: tables.rows, policyCount: policies.rowCount, bucket: bucket.rows[0] || null, counts }, null, 2));
 }
 
+async function verifyBookmarks(client) {
+  await client.query('begin');
+  try {
+    const owner = (await client.query('select id from public.users limit 1')).rows[0]?.id;
+    if (!owner) throw new Error('검증할 계정이 없습니다.');
+    await client.query('set local role authenticated');
+    await client.query("select set_config('request.jwt.claim.sub', $1, true)", [owner]);
+    const codes = await client.query("select code from public.common_codes where code_group = 'BOOKMARK_CATEGORY' order by sort_order");
+    if (codes.rows.map((row) => row.code).join(',') !== 'TECH,HEALTH,IDEA') throw new Error('분류 코드 검증 실패');
+    const inserted = (await client.query("insert into public.bookmarks(user_id, category_code, url, title) values ($1, 'TECH', 'https://example.com', 'transactional verification') returning id, created_at", [owner])).rows[0];
+    const updated = (await client.query("update public.bookmarks set title = 'updated', created_at = '2000-01-01' where id = $1 returning created_at", [inserted.id])).rows[0];
+    if (updated.created_at.toISOString() !== inserted.created_at.toISOString()) throw new Error('등록일자 보존 검증 실패');
+    await client.query("select set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true)");
+    const foreignRead = await client.query('select id from public.bookmarks where id = $1', [inserted.id]);
+    const foreignUpdate = await client.query("update public.bookmarks set title = 'forbidden' where id = $1 returning id", [inserted.id]);
+    const foreignDelete = await client.query('delete from public.bookmarks where id = $1 returning id', [inserted.id]);
+    if (foreignRead.rowCount || foreignUpdate.rowCount || foreignDelete.rowCount) throw new Error('계정 분리 검증 실패');
+    await client.query('savepoint forbidden_insert');
+    let denied = false;
+    try { await client.query("insert into public.bookmarks(user_id, category_code, url) values ($1, 'TECH', 'https://example.com')", [owner]); }
+    catch (error) { if (error.code === '42501') denied = true; else throw error; }
+    await client.query('rollback to savepoint forbidden_insert');
+    if (!denied) throw new Error('다른 계정으로 등록 차단 검증 실패');
+    await client.query("select set_config('request.jwt.claim.sub', $1, true)", [owner]);
+    const deleted = await client.query('delete from public.bookmarks where id = $1 returning id', [inserted.id]);
+    if (deleted.rowCount !== 1) throw new Error('소유자 삭제 검증 실패');
+    console.log(JSON.stringify({ bookmarkChecks: ['category codes', 'owner CRUD', 'immutable creation date', 'cross-account read/update/delete denied', 'cross-account insert denied'], passed: true, changesRolledBack: true }));
+  } finally { await client.query('rollback'); }
+}
+
 const action = process.argv[2];
-if (!['backup', 'backup-rest', 'migrate', 'verify'].includes(action)) throw new Error('사용법: node scripts/supabase-db.mjs <backup|backup-rest|migrate|verify>');
+if (!['backup', 'backup-rest', 'migrate', 'verify', 'verify-bookmarks'].includes(action)) throw new Error('사용법: node scripts/supabase-db.mjs <backup|backup-rest|migrate [filename]|verify|verify-bookmarks>');
 
 if (action === 'backup-rest') {
   await backupRest();
@@ -144,6 +178,7 @@ if (action === 'backup-rest') {
     if (action === 'backup') await backup(client);
     if (action === 'migrate') await migrate(client);
     if (action === 'verify') await verify(client);
+    if (action === 'verify-bookmarks') await verifyBookmarks(client);
   } finally {
     await client.end();
   }

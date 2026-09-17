@@ -144,7 +144,8 @@ describe('MobileAppShell', () => {
     expect(markup).toContain('파일');
     expect(markup).toContain('검색');
     expect(markup).not.toContain('휴지통');
-    expect(markup).toContain('grid-cols-5');
+    expect(markup).toContain('북마크');
+    expect(markup).toContain('grid-cols-6');
     expect(markup).toContain('min-w-0 max-w-full');
   });
 

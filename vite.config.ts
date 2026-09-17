@@ -2,7 +2,8 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import {execSync} from 'node:child_process';
 import path from 'path';
-import {defineConfig, Plugin} from 'vite';
+import {defineConfig, loadEnv, Plugin} from 'vite';
+import bookmarkMetadataHandler from './api/bookmark-metadata';
 
 // Vercel builds from an upload without .git, so the SHA has to arrive as an env var.
 // scripts/deploy-vercel.mjs passes VITE_BUILD_COMMIT; VERCEL_GIT_COMMIT_SHA covers
@@ -30,9 +31,16 @@ function buildCommitMeta(): Plugin {
   };
 }
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_SUPABASE_');
+  Object.assign(process.env, env);
   return {
-    plugins: [react(), tailwindcss(), buildCommitMeta()],
+    plugins: [react(), tailwindcss(), buildCommitMeta(), {
+      name: 'bookmark-metadata-api',
+      configureServer(server) {
+        server.middlewares.use('/api/bookmark-metadata', bookmarkMetadataHandler);
+      },
+    }],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

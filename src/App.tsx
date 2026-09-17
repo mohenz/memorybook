@@ -34,6 +34,7 @@ import NoteDetail from './components/NoteDetail';
 import NoteEditor from './components/NoteEditor';
 import SearchView from './components/SearchView';
 import TodoListView from './components/TodoListView';
+import BookmarkView from './features/bookmarks/BookmarkView';
 import CalendarView from './components/CalendarView';
 import SettingsModal from './components/SettingsModal';
 import SchedulePopupModal from './components/SchedulePopupModal';
@@ -106,6 +107,7 @@ const SCREEN_TO_MOBILE_TAB: Partial<Record<ScreenType, MobileTab>> = {
   DASHBOARD: 'NOTES',
   CALENDAR: 'CALENDAR',
   TODOS: 'TODOS',
+  BOOKMARKS: 'BOOKMARKS',
   ARCHIVE: 'FILES',
   SEARCH: 'SEARCH',
 };
@@ -753,6 +755,7 @@ export default function App() {
   // Screens shared by desktop and mobile layouts (rendered without the desktop sidebar on mobile)
   const renderOverlayScreen = () => (
     <>
+      {screen === 'BOOKMARKS' && archiveUser && <BookmarkView key={archiveUser.uid} userId={archiveUser.uid} />}
       {screen === 'EDITOR' && (
         <NoteEditor
           note={editingNote}

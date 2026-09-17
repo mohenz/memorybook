@@ -37,7 +37,7 @@ export interface Note {
   checklist: ChecklistItem[];
 }
 
-export type ScreenType = 'SPLASH' | 'DASHBOARD' | 'EDITOR' | 'SEARCH' | 'CALENDAR' | 'ARCHIVE' | 'TODOS';
+export type ScreenType = 'SPLASH' | 'DASHBOARD' | 'EDITOR' | 'SEARCH' | 'CALENDAR' | 'ARCHIVE' | 'TODOS' | 'BOOKMARKS';
 
 export type SchedulePriority = 'high' | 'normal' | 'low';
 

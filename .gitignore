@@ -12,3 +12,6 @@ test-results/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Local design drafts and generated source context.
+/.superdesign/

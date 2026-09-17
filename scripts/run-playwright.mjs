@@ -6,7 +6,11 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const server = spawn(
   process.execPath,
   ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5180'],
-  { cwd: projectRoot, stdio: 'ignore', windowsHide: true },
+  {
+    cwd: projectRoot, stdio: 'ignore', windowsHide: true,
+    // Browser tests intercept this isolated backend; never use a real account.
+    env: { ...process.env, VITE_SUPABASE_URL: 'https://memorybook-e2e.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key' },
+  },
 );
 
 let serverExited = false;

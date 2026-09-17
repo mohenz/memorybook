@@ -1,7 +1,7 @@
 import React from 'react';
 import MemoryIcon, { type MemoryIconName } from '../components/MemoryIcon';
 
-export type MobileTab = 'NOTES' | 'CALENDAR' | 'TODOS' | 'FILES' | 'SEARCH';
+export type MobileTab = 'NOTES' | 'CALENDAR' | 'TODOS' | 'FILES' | 'SEARCH' | 'BOOKMARKS';
 
 interface MobileBottomNavProps {
   activeTab: MobileTab;
@@ -13,13 +13,14 @@ const TABS: Array<{ id: MobileTab; label: string; icon: MemoryIconName }> = [
   { id: 'CALENDAR', label: '캘린더', icon: 'calendar' },
   { id: 'TODOS', label: 'TO-DO', icon: 'todo' },
   { id: 'FILES', label: '파일', icon: 'library' },
+  { id: 'BOOKMARKS', label: '북마크', icon: 'link' },
   { id: 'SEARCH', label: '검색', icon: 'search' },
 ];
 
 export default function MobileBottomNav({ activeTab, onChangeTab }: MobileBottomNavProps) {
   return (
     <nav
-      className="relative z-50 grid w-full min-w-0 max-w-full shrink-0 grid-cols-5 overflow-hidden border-t border-grid-line bg-background"
+      className="relative z-50 grid w-full min-w-0 max-w-full shrink-0 grid-cols-6 overflow-hidden border-t border-grid-line bg-background"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {TABS.map(({ id, label, icon }) => (

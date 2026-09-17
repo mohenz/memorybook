@@ -203,6 +203,14 @@ export default function Sidebar({
             <span>검색</span>
           </button>
 
+          <button
+            onClick={() => setScreen('BOOKMARKS')}
+            className={`min-w-max lg:w-full flex items-center gap-3 px-4 py-1.5 rounded-xl text-sm transition-all font-medium ${currentScreen === 'BOOKMARKS' ? 'bg-primary text-white shadow-soft font-semibold' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
+          >
+            <MemoryIcon name="link" className="w-5 h-5" />
+            <span>북마크</span>
+          </button>
+
           {/* Group Folder Divider */}
           <div className="flex pt-1 lg:pt-3 pb-1 px-4 items-center justify-between min-w-max lg:min-w-0">
             <span className="text-[11px] font-bold text-outline uppercase tracking-wider">그룹 폴더</span>
