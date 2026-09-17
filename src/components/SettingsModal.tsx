@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sun, Moon, Check, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
 import MemoryIcon from './MemoryIcon';
+import BookmarkCodeSettings from '../features/bookmarks/BookmarkCodeSettings';
 import { Group, NotificationSettings } from '../types';
 
 const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
@@ -122,7 +123,7 @@ export default function SettingsModal({
   onRequestNotificationPermission = async () => false,
   notificationsSupported = true,
 }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'archive' | 'theme' | 'folders' | 'notifications'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'archive' | 'theme' | 'folders' | 'bookmarkCodes' | 'notifications'>('profile');
   const [dragOver, setDragOver] = useState(false);
   const [archiveEmail, setArchiveEmail] = useState('');
   const [archivePassword, setArchivePassword] = useState('');
@@ -160,6 +161,7 @@ export default function SettingsModal({
           </div>
           <button 
             onClick={onClose}
+            aria-label="설정 닫기"
             className="p-1.5 hover:bg-surface dark:hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
           >
             <X className="w-5 h-5" />
@@ -206,6 +208,19 @@ export default function SettingsModal({
           >
             <MemoryIcon name="folder" className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">폴더</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('bookmarkCodes')}
+            title="URL링크분류 관리"
+            aria-label="URL링크분류 관리"
+            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'bookmarkCodes'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            <MemoryIcon name="link" className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">분류</span>
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
@@ -436,6 +451,8 @@ export default function SettingsModal({
               )}
             </div>
           )}
+
+          {activeTab === 'bookmarkCodes' && <BookmarkCodeSettings />}
 
           {activeTab === 'notifications' && (
             <div className="space-y-5">

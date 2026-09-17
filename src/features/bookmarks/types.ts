@@ -3,6 +3,15 @@ export interface BookmarkCategory {
   label: string;
 }
 
+export interface BookmarkCode extends BookmarkCategory {
+  sort_order: number;
+  is_active: boolean;
+}
+
+export type BookmarkCodeDraft = BookmarkCode;
+
+export type BookmarkCodePatch = Omit<BookmarkCode, 'code'>;
+
 export interface SiteInfo {
   title?: string;
   description?: string;

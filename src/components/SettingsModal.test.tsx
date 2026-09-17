@@ -56,3 +56,16 @@ describe('SettingsModal folder tab', () => {
     expect(markup).not.toContain('value="업무"');
   });
 });
+
+describe('SettingsModal bookmark category tab', () => {
+  it('renders the URL 링크 분류 관리 entry point next to the other tabs', () => {
+    const markup = renderModal();
+    expect(markup).toContain('URL링크분류 관리');
+    expect(markup).toContain('>분류</span>');
+  });
+
+  it('keeps the category panel out of the initial markup until the tab is opened', () => {
+    const markup = renderModal();
+    expect(markup).not.toContain('URL링크분류 공통코드 관리');
+  });
+});

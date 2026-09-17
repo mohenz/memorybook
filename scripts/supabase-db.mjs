@@ -9,6 +9,7 @@ const migrationFiles = [
   '202608050001_initial_memorybook.sql',
   '202608241200_normalize_memo_tables.sql',
   '202609170001_bookmarks.sql',
+  '202609170002_bookmark_code_management.sql',
 ].map((file) => path.join(root, 'supabase', 'migrations', file));
 
 function decode(value) {
@@ -143,9 +144,29 @@ async function verifyBookmarks(client) {
     if (!owner) throw new Error('검증할 계정이 없습니다.');
     await client.query('set local role authenticated');
     await client.query("select set_config('request.jwt.claim.sub', $1, true)", [owner]);
-    const codes = await client.query("select code from public.common_codes where code_group = 'BOOKMARK_CATEGORY' order by sort_order");
-    if (codes.rows.map((row) => row.code).join(',') !== 'TECH,HEALTH,IDEA') throw new Error('분류 코드 검증 실패');
-    const inserted = (await client.query("insert into public.bookmarks(user_id, category_code, url, title) values ($1, 'TECH', 'https://example.com', 'transactional verification') returning id, created_at", [owner])).rows[0];
+    const codes = await client.query("select code from public.common_codes where code_group = 'BOOKMARK_CATEGORY' and is_active order by sort_order");
+    if (!codes.rows.length) throw new Error('활성 분류 코드 검증 실패');
+    const category = codes.rows[0].code;
+    await client.query('savepoint code_management');
+    await client.query("insert into public.common_codes(code_group, code, label, sort_order) values ('BOOKMARK_CATEGORY', 'VERIFY_CODE', '검증용 분류', 9999)");
+    await client.query("update public.common_codes set label = '검증용 분류 수정', is_active = false where code_group = 'BOOKMARK_CATEGORY' and code = 'VERIFY_CODE'");
+    let codeGuards = 0;
+    // 코드값 변경과 그룹 이동은 권한 단계에서 막혀야 기존 북마크의 분류가 유지된다.
+    for (const statement of [
+      "update public.common_codes set code = 'RENAMED' where code_group = 'BOOKMARK_CATEGORY' and code = 'VERIFY_CODE'",
+      "update public.common_codes set code_group = 'OTHER_GROUP' where code_group = 'BOOKMARK_CATEGORY' and code = 'VERIFY_CODE'",
+      "insert into public.common_codes(code_group, code, label) values ('OTHER_GROUP', 'BLOCKED', 'blocked')",
+      "delete from public.common_codes where code_group = 'BOOKMARK_CATEGORY' and code = 'VERIFY_CODE'",
+      "insert into public.common_codes(code_group, code, label) values ('BOOKMARK_CATEGORY', 'bad code', 'invalid')",
+    ]) {
+      await client.query('savepoint code_guard');
+      try { await client.query(statement); }
+      catch (error) { if (['42501', '23514'].includes(error.code)) codeGuards += 1; else throw error; }
+      await client.query('rollback to savepoint code_guard');
+    }
+    if (codeGuards !== 5) throw new Error('분류 코드 변경 제한 검증 실패');
+    await client.query('rollback to savepoint code_management');
+    const inserted = (await client.query("insert into public.bookmarks(user_id, category_code, url, title) values ($1, $2, 'https://example.com', 'transactional verification') returning id, created_at", [owner, category])).rows[0];
     const updated = (await client.query("update public.bookmarks set title = 'updated', created_at = '2000-01-01' where id = $1 returning created_at", [inserted.id])).rows[0];
     if (updated.created_at.toISOString() !== inserted.created_at.toISOString()) throw new Error('등록일자 보존 검증 실패');
     await client.query("select set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true)");
@@ -155,14 +176,14 @@ async function verifyBookmarks(client) {
     if (foreignRead.rowCount || foreignUpdate.rowCount || foreignDelete.rowCount) throw new Error('계정 분리 검증 실패');
     await client.query('savepoint forbidden_insert');
     let denied = false;
-    try { await client.query("insert into public.bookmarks(user_id, category_code, url) values ($1, 'TECH', 'https://example.com')", [owner]); }
+    try { await client.query("insert into public.bookmarks(user_id, category_code, url) values ($1, $2, 'https://example.com')", [owner, category]); }
     catch (error) { if (error.code === '42501') denied = true; else throw error; }
     await client.query('rollback to savepoint forbidden_insert');
     if (!denied) throw new Error('다른 계정으로 등록 차단 검증 실패');
     await client.query("select set_config('request.jwt.claim.sub', $1, true)", [owner]);
     const deleted = await client.query('delete from public.bookmarks where id = $1 returning id', [inserted.id]);
     if (deleted.rowCount !== 1) throw new Error('소유자 삭제 검증 실패');
-    console.log(JSON.stringify({ bookmarkChecks: ['category codes', 'owner CRUD', 'immutable creation date', 'cross-account read/update/delete denied', 'cross-account insert denied'], passed: true, changesRolledBack: true }));
+    console.log(JSON.stringify({ bookmarkChecks: ['active category codes', 'category add/rename/deactivate', 'code rename, group move, delete and format denied', 'owner CRUD', 'immutable creation date', 'cross-account read/update/delete denied', 'cross-account insert denied'], passed: true, changesRolledBack: true }));
   } finally { await client.query('rollback'); }
 }
 
