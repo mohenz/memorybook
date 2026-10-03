@@ -16,6 +16,8 @@ const renderSidebar = () => renderToStaticMarkup(
     profileImage="https://example.com/avatar.png"
     onOpenArchive={() => undefined}
     onOpenSettings={() => undefined}
+    darkMode={false}
+    onToggleDarkMode={() => undefined}
     onLogout={async () => undefined}
   />
 );
@@ -29,6 +31,7 @@ describe('Sidebar footer actions', () => {
     expect(markup).toContain('aria-label="도움말"');
     expect(markup).toContain('aria-label="설정"');
     expect(markup).toContain('aria-label="로그아웃"');
+    expect(markup).toContain('aria-label="다크 테마로 변경"');
     expect(markup).not.toMatch(/<span>도움말<\/span>|<span>설정<\/span>|<span>로그아웃<\/span>/);
     expect(markup.indexOf('aria-label="일정 추가"')).toBeLessThan(markup.indexOf('aria-label="설정"'));
     expect(markup.indexOf('aria-label="메모 추가"')).toBeLessThan(markup.indexOf('aria-label="설정"'));

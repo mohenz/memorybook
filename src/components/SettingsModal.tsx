@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sun, Moon, Check, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
 import MemoryIcon from './MemoryIcon';
 import BookmarkCodeSettings from '../features/bookmarks/BookmarkCodeSettings';
 import { Group, NotificationSettings } from '../types';
@@ -14,8 +14,6 @@ interface SettingsModalProps {
   onClose: () => void;
   profileImage: string;
   onUpdateProfileImage: (file: File) => Promise<void>;
-  darkMode: boolean;
-  onToggleDarkMode: (enabled: boolean) => void;
   groups: Group[];
   onRenameGroup: (groupId: string, newName: string) => void;
   onReorderGroup: (groupId: string, direction: 'up' | 'down') => void;
@@ -105,8 +103,6 @@ export default function SettingsModal({
   onClose,
   profileImage,
   onUpdateProfileImage,
-  darkMode,
-  onToggleDarkMode,
   groups,
   onRenameGroup,
   onReorderGroup,
@@ -123,7 +119,7 @@ export default function SettingsModal({
   onRequestNotificationPermission = async () => false,
   notificationsSupported = true,
 }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'archive' | 'theme' | 'folders' | 'bookmarkCodes' | 'notifications'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'archive' | 'folders' | 'bookmarkCodes' | 'notifications'>('profile');
   const [dragOver, setDragOver] = useState(false);
   const [archiveEmail, setArchiveEmail] = useState('');
   const [archivePassword, setArchivePassword] = useState('');
@@ -182,19 +178,6 @@ export default function SettingsModal({
           >
             <User className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline">프로필</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('theme')}
-            title="화면 테마 설정"
-            aria-label="화면 테마 설정"
-            className={`flex-1 min-w-0 py-3.5 px-1 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'theme'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <Sun className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">테마</span>
           </button>
           <button
             onClick={() => setActiveTab('folders')}
@@ -318,73 +301,8 @@ export default function SettingsModal({
                 {profileStatus && <p className="text-xs font-semibold text-primary">{profileStatus}</p>}
               </div>
 
-            </div>
-          )}
-
-          {activeTab === 'theme' && (
-            <div className="space-y-5">
-              <span className="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider block">
-                화면 보기 모드 설정
-              </span>
-              
-              <div className="grid grid-cols-2 gap-4">
-                
-                {/* Light Mode Card */}
-                <button
-                  onClick={() => onToggleDarkMode(false)}
-                  className={`flex flex-col items-center justify-between p-6 rounded-2xl border-2 transition-all text-center gap-4 ${
-                    !darkMode
-                      ? 'border-primary bg-primary-container/20 ring-2 ring-primary/25 shadow-md'
-                      : 'border-outline-variant/40 dark:border-outline/20 bg-slate-50 hover:border-primary text-slate-800'
-                  }`}
-                >
-                  <div className={`p-4 rounded-full ${!darkMode ? 'bg-primary/10 text-primary' : 'bg-slate-200 text-slate-600'}`}>
-                    <Sun className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900">밝게보기</h3>
-                    <p className="text-[11px] text-slate-500 mt-1">낮이나 조명이 있는 공간에서 추천</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                    !darkMode ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white'
-                  }`}>
-                    {!darkMode && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </button>
-
-                {/* Dark Mode Card */}
-                <button
-                  onClick={() => onToggleDarkMode(true)}
-                  className={`flex flex-col items-center justify-between p-6 rounded-2xl border-2 transition-all text-center gap-4 ${
-                    darkMode
-                      ? 'border-primary bg-primary-container/20 ring-2 ring-primary/25 shadow-md'
-                      : 'border-outline-variant/40 dark:border-outline/20 bg-slate-900 hover:border-primary text-slate-100'
-                  }`}
-                >
-                  <div className={`p-4 rounded-full ${darkMode ? 'bg-primary/20 text-primary' : 'bg-slate-800 text-slate-400'}`}>
-                    <Moon className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-100">어둡게 보기</h3>
-                    <p className="text-[11px] text-slate-400 mt-1">밤이나 어두운 장소에서 눈 피로 방지</p>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                    darkMode ? 'border-primary bg-primary text-white' : 'border-slate-600 bg-transparent'
-                  }`}>
-                    {darkMode && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </button>
-
-              </div>
-
-              {/* Dynamic notice describing dark theme features */}
-              <div className="p-4 bg-surface dark:bg-surface-container-lowest rounded-2xl border border-outline-variant/30 text-xs text-on-surface-variant leading-relaxed">
-                <span className="font-bold text-primary block mb-1">다크 모드</span>
-                어둡게 보기를 켜면 종이 질감 격자 무늬의 농도와 선 색상이 어두운 밤하늘 테마에 맞춰 안전하게 조절됩니다.
-              </div>
-
               {/* PWA Installation Card */}
-              <div className="border-t border-grid-line dark:border-outline/10 pt-5 space-y-3">
+              <div className="border-t border-grid-line dark:border-outline/10 pt-5 space-y-3 mt-5">
                 <span className="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider block">
                   데스크톱/모바일 전용 앱(PWA) 설치
                 </span>

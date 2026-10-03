@@ -130,6 +130,10 @@ export default function App() {
   const [profileImage, setProfileImage] = useState<string>(PREMIUM_IMAGES.userProfile);
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const handleToggleDarkMode = (enabled: boolean) => {
+    setDarkMode(enabled);
+    if (archiveUser) saveUserSettings(archiveUser.uid, { darkMode: enabled, profileImage, notificationSettings }).catch((error) => reportSaveError(error, '설정 저장에 실패했습니다.'));
+  };
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [archiveUser, setArchiveUser] = useState<{ uid: string; email: string | null } | null>(null);
   const [archiveStatus, setArchiveStatus] = useState('');
@@ -858,6 +862,8 @@ export default function App() {
             profileImage={profileImage}
             onOpenArchive={() => setScreen('ARCHIVE')}
             onOpenSettings={() => setShowSettingsModal(true)}
+            darkMode={darkMode}
+            onToggleDarkMode={handleToggleDarkMode}
             onLogout={logoutArchiveAccount}
           />
 
@@ -1131,11 +1137,6 @@ export default function App() {
             setProfileImage(imageUrl);
             await saveUserSettings(archiveUser.uid, { darkMode, profileImage: imageUrl, notificationSettings });
             setArchiveStatus('프로필 이미지가 자료실 Storage에 저장되었습니다.');
-          }}
-          darkMode={darkMode}
-          onToggleDarkMode={(enabled) => {
-            setDarkMode(enabled);
-            if (archiveUser) saveUserSettings(archiveUser.uid, { darkMode: enabled, profileImage, notificationSettings }).catch((error) => reportSaveError(error, '설정 저장에 실패했습니다.'));
           }}
           groups={groups}
           onRenameGroup={handleRenameFolder}

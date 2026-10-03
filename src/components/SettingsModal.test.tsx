@@ -14,8 +14,6 @@ const renderModal = (groups: Group[] = mockGroups) =>
       onClose={() => undefined}
       profileImage="https://example.com/avatar.png"
       onUpdateProfileImage={async () => undefined}
-      darkMode={false}
-      onToggleDarkMode={() => undefined}
       groups={groups}
       onRenameGroup={() => undefined}
       onReorderGroup={() => undefined}

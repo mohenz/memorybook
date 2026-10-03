@@ -3,7 +3,10 @@ import {
   Briefcase, 
   User, 
   Compass, 
-  LogOut
+  LogOut,
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Group, ScreenType } from '../types';
 import HelpModal from './HelpModal';
@@ -22,6 +25,8 @@ interface SidebarProps {
   profileImage: string;
   onOpenArchive: () => void;
   onOpenSettings: () => void;
+  darkMode: boolean;
+  onToggleDarkMode: (enabled: boolean) => void;
   onLogout: () => Promise<void>;
 }
 
@@ -78,6 +83,8 @@ export default function Sidebar({
   profileImage,
   onOpenArchive,
   onOpenSettings,
+  darkMode,
+  onToggleDarkMode,
   onLogout
 }: SidebarProps) {
   const [showAddFolderModal, setShowAddFolderModal] = useState(false);
@@ -311,10 +318,19 @@ export default function Sidebar({
               type="button"
               onClick={onOpenSettings}
               aria-label="설정"
-              title="설정 및 테마 변경"
+              title="설정"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              <MemoryIcon name="settings" className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onToggleDarkMode(!darkMode)}
+              aria-label={darkMode ? '라이트 테마로 변경' : '다크 테마로 변경'}
+              title={darkMode ? '라이트 테마로 변경' : '다크 테마로 변경'}
+              className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
+            >
+              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
             <button
               type="button"
