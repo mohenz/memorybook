@@ -62,7 +62,7 @@ export default function MobileNoteDetailScreen({ note, groups, todos, onUpdateTo
           <p className="text-xs text-outline mb-2">{note.updatedAt}</p>
           <h2 className="text-xl font-bold text-on-background mb-4 break-words">{note.title}</h2>
           <div
-            className="prose prose-sm prose-slate max-w-none break-words text-sm leading-7 text-on-surface-variant"
+            className="prose prose-sm prose-slate max-w-none [--tw-prose-body:var(--color-on-surface-variant)] [--tw-prose-headings:var(--color-on-background)] [--tw-prose-bold:var(--color-on-background)] [--tw-prose-lead:var(--color-on-surface-variant)] [--tw-prose-links:var(--color-primary)] [--tw-prose-counters:var(--color-outline)] [--tw-prose-bullets:var(--color-outline)] [--tw-prose-quotes:var(--color-on-background)] [--tw-prose-quote-borders:var(--color-outline-variant)] [--tw-prose-captions:var(--color-outline)] [--tw-prose-code:var(--color-on-background)] [--tw-prose-th-borders:var(--color-outline-variant)] [--tw-prose-td-borders:var(--color-outline-variant)] [--tw-prose-hr:var(--color-outline-variant)] break-words text-sm leading-7 text-on-surface-variant"
             dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(note.content) }}
           />
 

@@ -87,7 +87,7 @@ export default function NoteDetail({
         </div>
 
         {/* Body Content */}
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none [--tw-prose-body:var(--color-on-surface-variant)] [--tw-prose-headings:var(--color-on-background)] [--tw-prose-bold:var(--color-on-background)] [--tw-prose-lead:var(--color-on-surface-variant)] [--tw-prose-links:var(--color-primary)] [--tw-prose-counters:var(--color-outline)] [--tw-prose-bullets:var(--color-outline)] [--tw-prose-quotes:var(--color-on-background)] [--tw-prose-quote-borders:var(--color-outline-variant)] [--tw-prose-captions:var(--color-outline)] [--tw-prose-code:var(--color-on-background)] [--tw-prose-th-borders:var(--color-outline-variant)] [--tw-prose-td-borders:var(--color-outline-variant)] [--tw-prose-hr:var(--color-outline-variant)]">
           <div
             className="text-base leading-8 text-on-surface-variant font-medium"
             dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(note.content) }}
