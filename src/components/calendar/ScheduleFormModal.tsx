@@ -1,5 +1,5 @@
 import { FormEvent, useRef, useState } from 'react';
-import { Bell, CalendarDays, Trash2, X } from 'lucide-react';
+import { AnimatedBell, AnimatedCalendarDays, AnimatedTrash, AnimatedX } from '../animated-icons';
 import { Schedule, SchedulePriority, ScheduleRecurrence, ScheduleReminder } from '../../types';
 import { PRIORITY_COLORS, PRIORITY_LABELS, PRIORITY_ORDER, SCHEDULE_INPUT_STEP_MINUTES, WEEKDAY_OPTIONS, minutesToTime, snapToStep, timeToMinutes, weekdayFromDateString } from './scheduleUtils';
 
@@ -165,7 +165,7 @@ export default function ScheduleFormModal({
             aria-label="닫기"
             className="p-1.5 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors cursor-pointer"
           >
-            <X className="w-4.5 h-4.5" />
+            <AnimatedX size={18} />
           </button>
         </div>
 
@@ -278,7 +278,7 @@ export default function ScheduleFormModal({
                     }}
                     className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-md text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                   >
-                    <CalendarDays className="w-4 h-4" />
+                    <AnimatedCalendarDays size={16} />
                   </button>
                 </div>
               </label>
@@ -346,7 +346,7 @@ export default function ScheduleFormModal({
 
         <div className="rounded-xl border border-outline-variant bg-surface-container-low p-3 space-y-3">
           <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-on-surface-variant">
-            <span className="flex items-center gap-2"><Bell className="h-4 w-4 text-primary" />알림</span>
+            <span className="flex items-center gap-2"><AnimatedBell size={16} className="text-primary" />알림</span>
             <input
               type="checkbox"
               checked={Boolean(draft.reminder?.enabled)}
@@ -403,7 +403,7 @@ export default function ScheduleFormModal({
               }}
               className="flex items-center gap-1.5 px-3 py-2 text-error hover:bg-error/10 rounded-xl transition-colors"
             >
-              <Trash2 className="w-4 h-4" />
+              <AnimatedTrash size={16} />
               휴지통으로 이동
             </button>
           ) : (

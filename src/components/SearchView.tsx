@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  X, 
-  Calendar, 
-  Grid, 
-  List,
-  Pin,
-} from 'lucide-react';
+import { Grid, List, Pin } from 'lucide-react';
+import { AnimatedX } from './animated-icons';
 import { Note, Group } from '../types';
 import { stripMarkdown } from '../utils/markdown';
 import MemoryIcon from './MemoryIcon';
@@ -90,7 +85,7 @@ export default function SearchView({
                 onClick={() => setQuery('')}
                 className="absolute inset-y-0 right-4 flex items-center text-outline-variant hover:text-primary transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <AnimatedX size={20} />
               </button>
             )}
           </div>

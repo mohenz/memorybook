@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  MoreVertical,
-  X,
-  Maximize2,
-  Minimize2,
-} from 'lucide-react';
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { AnimatedX } from './animated-icons';
 import { Note, Group, TodoItem, TodoStatus } from '../types';
 import TodoItemCard from './TodoItemCard';
 import MemoryIcon from './MemoryIcon';
@@ -251,7 +247,7 @@ export default function NoteDetail({
             title="닫기"
             aria-label="이미지 확대 보기 닫기"
           >
-            <X className="w-5 h-5" />
+            <AnimatedX size={20} />
           </button>
           <img
             src={selectedImage.url}

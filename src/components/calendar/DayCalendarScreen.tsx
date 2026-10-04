@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { AnimatedPlus } from '../animated-icons';
 import { Schedule } from '../../types';
 import HolidayBadges from '../../features/holidays/HolidayBadges';
 import { KoreanHoliday } from '../../features/holidays/koreanHolidayTypes';
@@ -38,7 +38,7 @@ export default function DayCalendarScreen({
           onClick={() => onCreateSchedule(dateString, '09:00')}
           className="flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3.5 h-9 rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-soft cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <AnimatedPlus size={14} />
           새 일정
         </button>
       </div>

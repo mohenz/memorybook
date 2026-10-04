@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ExternalLink, Link, Plus, Search, X, Pencil, Trash2 } from 'lucide-react';
+import { Pencil } from 'lucide-react';
+import { AnimatedExternalLink, AnimatedLink, AnimatedPlus, AnimatedSearch, AnimatedTrash, AnimatedX } from '../../components/animated-icons';
 import { deleteBookmark, fetchSiteInfo, loadBookmarks, normalizeBookmarkUrl, saveBookmark, subscribeBookmarkCodes } from './service';
 import type { Bookmark, BookmarkCategory, BookmarkCode, BookmarkDraft, SiteInfo } from './types';
 
@@ -90,7 +91,7 @@ export function BookmarkForm({ bookmark, categories, onSave, onClose }: {
     <section aria-label={bookmark ? '북마크 수정' : '북마크 등록'} className="w-full shrink-0 border-b border-grid-line bg-background p-5 lg:w-80 lg:border-b-0 lg:border-l xl:w-96">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="font-bold">{bookmark ? '북마크 수정' : '북마크 등록'}</h2>
-        <button type="button" aria-label="북마크 폼 닫기" disabled={saving} onClick={onClose} className="rounded-lg p-2 hover:bg-surface"><X size={18} /></button>
+        <button type="button" aria-label="북마크 폼 닫기" disabled={saving} onClick={onClose} className="rounded-lg p-2 hover:bg-surface"><AnimatedX size={18} /></button>
       </div>
       <form onSubmit={submit} className="space-y-4">
         <label className="block space-y-1.5 text-sm font-semibold">URL링크분류
@@ -199,7 +200,7 @@ export default function BookmarkView({ userId }: { key?: string; userId: string 
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background text-on-surface">
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-grid-line p-4 md:px-6">
         <h1 className="text-xl font-bold">북마크</h1>
-        <button className={`${primaryClass} flex items-center gap-1.5`} disabled={loading || loadError || !activeCategories.length || Boolean(editor)} onClick={() => { setStatus(''); setEditor({ bookmark: null }); }}><Plus size={17} />북마크 등록</button>
+        <button className={`${primaryClass} flex items-center gap-1.5`} disabled={loading || loadError || !activeCategories.length || Boolean(editor)} onClick={() => { setStatus(''); setEditor({ bookmark: null }); }}><AnimatedPlus size={17} />북마크 등록</button>
       </header>
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {editor && <div className="shrink-0 lg:order-2 lg:overflow-y-auto"><BookmarkForm key={editor.bookmark?.id || 'new'} bookmark={editor.bookmark} categories={formCategories(editor.bookmark)} onSave={save} onClose={() => setEditor(null)} /></div>}
@@ -208,22 +209,22 @@ export default function BookmarkView({ userId }: { key?: string; userId: string 
             <div className="flex flex-wrap gap-2" aria-label="북마크 분류 필터">
               {[{ code: '', label: '전체' }, ...filterCategories].map((item) => <button key={item.code} aria-pressed={category === item.code} onClick={() => setCategory(item.code)} className={`rounded-full px-3 py-1.5 text-sm font-semibold ${category === item.code ? 'bg-primary text-on-primary' : 'bg-surface text-on-surface-variant'}`}>{item.label}</button>)}
             </div>
-            <label className="relative w-full sm:w-64"><Search size={16} className="absolute left-3 top-3 text-outline" /><input aria-label="북마크 검색" placeholder="URL 또는 제목 검색" value={query} onChange={(event) => setQuery(event.target.value)} className={`${fieldClass} pl-9`} /></label>
+            <label className="relative w-full sm:w-64"><AnimatedSearch size={16} className="absolute left-3 top-3 text-outline" /><input aria-label="북마크 검색" placeholder="URL 또는 제목 검색" value={query} onChange={(event) => setQuery(event.target.value)} className={`${fieldClass} pl-9`} /></label>
           </div>
           <p role="status" className="mb-3 text-sm text-on-surface-variant">{loading ? '북마크를 불러오는 중입니다.' : status}</p>
           {loadError ? <div role="alert" className="rounded-xl border border-grid-line p-6"><p>북마크를 불러오지 못했습니다.</p><button className={`${primaryClass} mt-3`} onClick={() => setRevision((value) => value + 1)}>다시 시도</button></div>
             : !loading && <>
               {!activeCategories.length && <p role="alert" className="mb-4 text-sm text-error">사용 중인 북마크 분류가 없습니다. 설정 &gt; 분류에서 URL링크분류를 추가해 주세요.</p>}
               <p className="mb-4 text-xs text-outline">{visible.length}개의 북마크 · 등록일 최신순</p>
-              {!visible.length ? <div className="rounded-xl border border-dashed border-outline-variant px-4 py-16 text-center text-on-surface-variant"><Link className="mx-auto mb-3" /><p>{query || category ? '검색 조건에 맞는 북마크가 없습니다.' : '저장된 북마크가 없습니다.'}</p><p className="mt-2 text-sm">{query || category ? '검색어나 분류를 변경해 보세요.' : '다시 보고 싶은 URL을 등록해 보세요.'}</p></div>
+              {!visible.length ? <div className="rounded-xl border border-dashed border-outline-variant px-4 py-16 text-center text-on-surface-variant"><AnimatedLink className="mx-auto mb-3" /><p>{query || category ? '검색 조건에 맞는 북마크가 없습니다.' : '저장된 북마크가 없습니다.'}</p><p className="mt-2 text-sm">{query || category ? '검색어나 분류를 변경해 보세요.' : '다시 보고 싶은 URL을 등록해 보세요.'}</p></div>
                 : <div className={`grid grid-cols-1 gap-4 ${editor ? 'xl:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-3'}`}>
                   {visible.map((item) => <article key={item.id} className="flex min-w-0 flex-col gap-3 rounded-xl border border-grid-line bg-surface-container-lowest p-4">
                     <span className="w-fit rounded-md bg-surface px-2 py-1 text-xs font-semibold">{codes.find((value) => value.code === item.category_code)?.label || item.category_code}</span>
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="group break-words"><h2 className="font-bold group-hover:underline">{item.title} <ExternalLink size={13} className="inline" /></h2><p className="mt-1 truncate text-xs text-outline">{item.url}</p></a>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="group break-words"><h2 className="font-bold group-hover:underline">{item.title} <AnimatedExternalLink size={13} className="inline" /></h2><p className="mt-1 truncate text-xs text-outline">{item.url}</p></a>
                     <SitePreview info={item.site_info || {}} />
                     <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-grid-line pt-3">
                       <time dateTime={item.created_at} className="text-[11px] text-outline">등록일자 {new Date(item.created_at).toLocaleString('ko-KR')}</time>
-                      <div className="flex gap-1"><button aria-label={`${item.title} 수정`} disabled={Boolean(editor) || Boolean(deleting)} onClick={() => setEditor({ bookmark: item })} className="rounded-lg p-2 hover:bg-surface disabled:opacity-40"><Pencil size={15} /></button><button aria-label={`${item.title} 삭제`} disabled={Boolean(deleting) || Boolean(editor)} onClick={() => void remove(item)} className="rounded-lg p-2 text-error hover:bg-surface disabled:opacity-40"><Trash2 size={15} /></button></div>
+                      <div className="flex gap-1"><button aria-label={`${item.title} 수정`} disabled={Boolean(editor) || Boolean(deleting)} onClick={() => setEditor({ bookmark: item })} className="rounded-lg p-2 hover:bg-surface disabled:opacity-40"><Pencil size={15} /></button><button aria-label={`${item.title} 삭제`} disabled={Boolean(deleting) || Boolean(editor)} onClick={() => void remove(item)} className="rounded-lg p-2 text-error hover:bg-surface disabled:opacity-40"><AnimatedTrash size={15} /></button></div>
                     </div>
                   </article>)}
                 </div>}

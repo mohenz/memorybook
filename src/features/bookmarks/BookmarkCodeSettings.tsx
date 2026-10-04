@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Plus } from 'lucide-react';
+import { AnimatedLink, AnimatedPlus } from '../../components/animated-icons';
 import { createBookmarkCode, loadBookmarkCodes, updateBookmarkCode } from './service';
 import type { BookmarkCode } from './types';
 
@@ -176,7 +176,7 @@ export default function BookmarkCodeSettings() {
           </label>
         </div>
         <button type="submit" disabled={adding || loading} className={`${primaryClass} flex w-full items-center justify-center gap-1.5 py-2.5`}>
-          <Plus className="h-3.5 w-3.5" />{adding ? '추가하는 중…' : '분류 추가'}
+          <AnimatedPlus size={14} />{adding ? '추가하는 중…' : '분류 추가'}
         </button>
       </form>
 
@@ -189,7 +189,7 @@ export default function BookmarkCodeSettings() {
         </div>
       ) : (
         <div className="py-10 text-center opacity-50">
-          <Link className="mx-auto mb-2 h-8 w-8 text-outline" />
+          <AnimatedLink size={32} className="mx-auto mb-2 text-outline" />
           <p className="text-xs font-semibold text-on-surface-variant">등록된 분류가 없습니다.</p>
           <button type="button" onClick={() => setRevision((value) => value + 1)} className="mt-3 text-xs font-bold text-primary underline">다시 불러오기</button>
         </div>

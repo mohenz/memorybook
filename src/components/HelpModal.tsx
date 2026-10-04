@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { AnimatedX } from './animated-icons';
 import MemoryIcon, { type MemoryIconName } from './MemoryIcon';
 
 interface HelpModalProps {
@@ -30,7 +30,7 @@ export default function HelpModal({ onClose }: HelpModalProps) {
             <p className="mt-0.5 text-xs text-on-surface-variant">MEMOry의 주요 기능을 간단히 안내합니다.</p>
           </div>
           <button type="button" onClick={onClose} aria-label="도움말 닫기" className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-high">
-            <X className="h-5 w-5" />
+            <AnimatedX size={20} />
           </button>
         </header>
 

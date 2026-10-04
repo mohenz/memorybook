@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { AnimatedX } from './animated-icons';
 import { TodoItem, TodoStatus } from '../types';
 import { toLocalDateString } from '../utils/date';
 import { getRemainingDayLabel } from '../utils/todos';
@@ -55,7 +55,7 @@ export default function TodoItemCard({ todo, accentClass, onUpdate, onDelete, on
           />
           <div className="flex justify-end gap-2">
             <button type="button" onClick={cancel} className="flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container cursor-pointer">
-              <X className="h-3.5 w-3.5" /> 취소
+              <AnimatedX size={14} /> 취소
             </button>
             <button type="button" onClick={save} disabled={!text.trim()} className="flex h-8 items-center gap-1 rounded-lg bg-primary px-2.5 text-xs font-bold text-white disabled:opacity-40 cursor-pointer">
               <MemoryIcon name="completed" className="h-3.5 w-3.5" /> 저장

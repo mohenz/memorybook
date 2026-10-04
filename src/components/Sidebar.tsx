@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  Briefcase, 
-  User, 
-  Compass, 
-  LogOut,
-  Settings,
-  Sun,
-  Moon
-} from 'lucide-react';
+import { Briefcase, User, Compass } from 'lucide-react';
+import { AnimatedLogOut, AnimatedMoon, AnimatedSettings, AnimatedSun } from './animated-icons';
 import { Group, ScreenType } from '../types';
 import HelpModal from './HelpModal';
 import MemoryIcon from './MemoryIcon';
@@ -321,7 +314,7 @@ export default function Sidebar({
               title="설정"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <AnimatedSettings size={14} />
             </button>
             <button
               type="button"
@@ -330,7 +323,7 @@ export default function Sidebar({
               title={darkMode ? '라이트 테마로 변경' : '다크 테마로 변경'}
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-primary"
             >
-              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              {darkMode ? <AnimatedSun size={14} /> : <AnimatedMoon size={14} />}
             </button>
             <button
               type="button"
@@ -339,7 +332,7 @@ export default function Sidebar({
               title="로그아웃"
               className="p-1.5 hover:bg-surface-container-high rounded-lg text-on-surface-variant hover:text-error"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <AnimatedLogOut size={14} />
             </button>
           </div>
         </div>

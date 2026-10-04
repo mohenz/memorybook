@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, User, Sparkles, Upload, Download, Smartphone, Cloud, LogOut, Folder, Bell, ChevronUp, ChevronDown } from 'lucide-react';
+import { User, Upload, Smartphone, Cloud, ChevronUp, ChevronDown } from 'lucide-react';
+import { AnimatedLogOut, AnimatedSparkles, AnimatedX } from './animated-icons';
 import MemoryIcon from './MemoryIcon';
 import BookmarkCodeSettings from '../features/bookmarks/BookmarkCodeSettings';
 import { Group, NotificationSettings } from '../types';
@@ -151,7 +152,7 @@ export default function SettingsModal({
         <header className="px-6 py-5 border-b border-grid-line dark:border-outline/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-primary/10 text-primary rounded-xl dark:bg-primary/20">
-              <Sparkles className="w-5 h-5" />
+              <AnimatedSparkles size={20} />
             </div>
             <h2 className="font-sans text-lg font-bold text-on-background">설정</h2>
           </div>
@@ -160,7 +161,7 @@ export default function SettingsModal({
             aria-label="설정 닫기"
             className="p-1.5 hover:bg-surface dark:hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors"
           >
-            <X className="w-5 h-5" />
+            <AnimatedX size={20} />
           </button>
         </header>
 
@@ -465,7 +466,7 @@ export default function SettingsModal({
                     onClick={onArchiveLogout}
                     className="w-full h-11 rounded-xl border border-outline-variant text-on-surface font-bold flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <AnimatedLogOut size={16} />
                     <span>MEMOry 로그아웃</span>
                   </button>
                 </div>

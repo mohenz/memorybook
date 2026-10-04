@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { CalendarDays, CheckSquare2 } from 'lucide-react';
+import { CheckSquare2 } from 'lucide-react';
+import { AnimatedCalendarDays } from '../animated-icons';
 import { Schedule, TodoItem } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 import { TODO_STATUS_LABELS } from '../../utils/todoStatus';
@@ -56,7 +57,7 @@ export default function AgendaCalendarScreen({ selectedDate, schedulesByDate, to
     return (
       <div className="flex h-full items-center justify-center p-8 text-center">
         <div>
-          <CalendarDays className="mx-auto h-10 w-10 text-outline-variant" />
+          <AnimatedCalendarDays size={40} className="mx-auto text-outline-variant" />
           <p className="mt-3 text-sm font-bold text-on-surface-variant">이 달에 등록된 일정과 할 일이 없습니다.</p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CalendarClock, LayoutGrid, Table2, X } from 'lucide-react';
+import { CalendarClock, LayoutGrid, Table2 } from 'lucide-react';
+import { AnimatedX } from './animated-icons';
 import { PopupScheduleData } from '../utils/scheduleFilter';
 import PopupCardView from './PopupCardView';
 import PopupTableView from './PopupTableView';
@@ -12,7 +13,7 @@ export default function SchedulePopupModal({ data, onClose }: { data: PopupSched
       <section role="dialog" aria-modal="true" aria-labelledby="schedule-popup-title" className="flex max-h-[90vh] w-[920px] max-w-full flex-col overflow-hidden rounded-3xl border border-outline-variant bg-surface-container-lowest shadow-2xl">
         <header className="flex items-center justify-between gap-3 border-b border-grid-line px-5 py-4">
           <div className="flex items-center gap-3"><span className="rounded-xl bg-primary/10 p-2 text-primary"><CalendarClock className="h-5 w-5" /></span><h2 id="schedule-popup-title" className="text-lg font-extrabold text-on-surface">주요 일정</h2></div>
-          <button type="button" aria-label="주요 일정 팝업 닫기" onClick={() => onClose(dontShowToday)} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-high"><X className="h-5 w-5" /></button>
+          <button type="button" aria-label="주요 일정 팝업 닫기" onClick={() => onClose(dontShowToday)} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-high"><AnimatedX size={20} /></button>
         </header>
         <div className="flex-1 overflow-y-auto p-4 md:p-5">
           <div className="mb-4 flex w-fit rounded-xl bg-surface-container-low p-1">
