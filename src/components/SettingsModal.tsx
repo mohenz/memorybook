@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Upload, Smartphone, Cloud, ChevronUp, ChevronDown } from 'lucide-react';
-import { AnimatedLogOut, AnimatedSparkles, AnimatedX } from './animated-icons';
+import { AnimatedLogOut, AnimatedMoon, AnimatedSparkles, AnimatedSun, AnimatedX } from './animated-icons';
 import MemoryIcon from './MemoryIcon';
 import BookmarkCodeSettings from '../features/bookmarks/BookmarkCodeSettings';
 import { Group, NotificationSettings } from '../types';
@@ -30,6 +30,8 @@ interface SettingsModalProps {
   notificationsSupported?: boolean;
   isInstallable?: boolean;
   onInstall?: () => void;
+  darkMode?: boolean;
+  onToggleDarkMode?: (enabled: boolean) => void;
 }
 
 interface FolderRenameRowProps {
@@ -115,6 +117,8 @@ export default function SettingsModal({
   onArchivePasswordReset,
   isInstallable,
   onInstall,
+  darkMode,
+  onToggleDarkMode,
   notificationSettings = DEFAULT_NOTIFICATION_SETTINGS,
   onNotificationSettingsChange = () => undefined,
   onRequestNotificationPermission = async () => false,
@@ -238,7 +242,28 @@ export default function SettingsModal({
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 min-h-0 space-y-6">
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              
+
+              {/* Color theme (mobile only: desktop toggles it from the sidebar) */}
+              {onToggleDarkMode && (
+                <div className="md:hidden flex items-center justify-between gap-3 bg-surface dark:bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/30">
+                  <div className="min-w-0">
+                    <span className="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider block">색상 테마</span>
+                    <p className="text-[11px] text-outline mt-0.5">{darkMode ? '다크 모드 사용 중' : '라이트 모드 사용 중'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(darkMode)}
+                    aria-label={darkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+                    onClick={() => onToggleDarkMode(!darkMode)}
+                    className="flex shrink-0 items-center gap-2 rounded-full border border-outline-variant/60 bg-surface-container px-4 py-2 text-sm font-bold text-on-surface transition-colors hover:border-primary/80"
+                  >
+                    {darkMode ? <AnimatedSun size={16} /> : <AnimatedMoon size={16} />}
+                    {darkMode ? '라이트' : '다크'}
+                  </button>
+                </div>
+              )}
+
               {/* Current Profile Preview */}
               <div className="flex flex-col items-center gap-3 bg-surface dark:bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/30 text-center">
                 <span className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">현재 프로필</span>

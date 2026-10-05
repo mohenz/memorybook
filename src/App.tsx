@@ -1170,6 +1170,8 @@ export default function App() {
           }}
           isInstallable={!!deferredPrompt}
           onInstall={handleInstallApp}
+          darkMode={darkMode}
+          onToggleDarkMode={handleToggleDarkMode}
         />
       )}
 

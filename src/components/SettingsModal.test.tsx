@@ -8,7 +8,7 @@ const mockGroups: Group[] = [
   { id: 'group-2', name: '개인', icon: 'User' },
 ];
 
-const renderModal = (groups: Group[] = mockGroups) =>
+const renderModal = (groups: Group[] = mockGroups, theme: { darkMode?: boolean; onToggleDarkMode?: (enabled: boolean) => void } = {}) =>
   renderToStaticMarkup(
     <SettingsModal
       onClose={() => undefined}
@@ -23,6 +23,7 @@ const renderModal = (groups: Group[] = mockGroups) =>
       onArchiveLogin={async () => undefined}
       onArchiveLogout={async () => undefined}
       onArchivePasswordReset={async () => undefined}
+      {...theme}
     />
   );
 
@@ -65,5 +66,25 @@ describe('SettingsModal bookmark category tab', () => {
   it('keeps the category panel out of the initial markup until the tab is opened', () => {
     const markup = renderModal();
     expect(markup).not.toContain('URL링크분류 공통코드 관리');
+  });
+});
+
+describe('SettingsModal color theme (mobile)', () => {
+  it('shows a mobile-only theme switch on the profile tab', () => {
+    const markup = renderModal(mockGroups, { darkMode: false, onToggleDarkMode: () => undefined });
+    expect(markup).toContain('색상 테마');
+    expect(markup).toContain('role="switch"');
+    expect(markup).toContain('aria-checked="false"');
+    expect(markup).toContain('md:hidden');
+  });
+
+  it('reflects dark mode in the switch state', () => {
+    const markup = renderModal(mockGroups, { darkMode: true, onToggleDarkMode: () => undefined });
+    expect(markup).toContain('aria-checked="true"');
+    expect(markup).toContain('라이트 모드로 전환');
+  });
+
+  it('omits the theme switch when no toggle handler is provided', () => {
+    expect(renderModal()).not.toContain('색상 테마');
   });
 });
