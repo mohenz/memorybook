@@ -247,4 +247,43 @@ describe('MobileCalendarScreen', () => {
     expect(markup).toContain('aria-pressed="true"');
     vi.useRealTimers();
   });
+  it('renders a month grid with schedule dots and month navigation in monthly mode', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 9, 12));
+    const schedule: Schedule = {
+      id: 'schedule-month',
+      title: '월간 회의',
+      dateString: '2026-08-09',
+      allDay: false,
+      startTime: '10:00',
+      endTime: '11:00',
+      priority: 'high',
+      createdAt: '2026-08-09',
+      updatedAt: '2026-08-09',
+    };
+
+    const markup = renderToStaticMarkup(
+      <MobileCalendarScreen
+        initialViewMode="month"
+        schedules={[schedule]}
+        profileImage="https://example.com/avatar.png"
+        onOpenSettings={() => undefined}
+        onAddSchedule={() => undefined}
+        onUpdateSchedule={() => undefined}
+        onDeleteSchedule={() => undefined}
+      />
+    );
+
+    expect(markup).toContain('월간 일정');
+    expect(markup).toContain('aria-label="월간"');
+    expect(markup).toContain('2026년 8월');
+    expect(markup).toContain('aria-label="2026년 8월 달력"');
+    expect(markup).toContain('aria-label="이전 달"');
+    expect(markup).toContain('aria-label="다음 달"');
+    expect(markup).toContain('aria-label="8월 9일, 일정 1개"');
+    expect(markup).toContain('aria-current="date"');
+    expect(markup).toContain('월간 회의');
+    expect(markup).not.toContain('aria-label="주간 일정 카드"');
+    vi.useRealTimers();
+  });
 });

@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, CalendarRange, ChevronLeft, ChevronRight, List, Plus, Sun } from 'lucide-react';
 import MemoryIcon from '../../components/MemoryIcon';
+import MobileMonthGrid from '../components/MobileMonthGrid';
+import HolidayBadges from '../../features/holidays/HolidayBadges';
+import { koreanHolidays } from '../../features/holidays/koreanHolidays.generated';
+import { groupKoreanHolidays } from '../../features/holidays/koreanHolidayUtils';
+import { formatCalendarPeriod, getMonthCells, shiftCalendarDate } from '../../components/calendar/calendarUtils';
 import { Schedule } from '../../types';
 import { toLocalDateString } from '../../utils/date';
 import ScheduleFormModal, { ScheduleDraft } from '../../components/calendar/ScheduleFormModal';
 import { PRIORITY_COLORS, groupSchedulesByDate } from '../../components/calendar/scheduleUtils';
 
+type MobileViewMode = 'day' | 'week' | 'month' | 'all';
+
 interface MobileCalendarScreenProps {
-  initialViewMode?: 'day' | 'week' | 'all';
+  initialViewMode?: MobileViewMode;
   schedules: Schedule[];
   profileImage: string;
   onOpenSettings: () => void;
@@ -65,12 +72,14 @@ export default function MobileCalendarScreen({
   onDeleteSchedule,
 }: MobileCalendarScreenProps) {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<'day' | 'week' | 'all'>(initialViewMode);
+  const [viewMode, setViewMode] = useState<MobileViewMode>(initialViewMode);
   const [scheduleModal, setScheduleModal] = useState<Schedule | null | undefined>(undefined);
-  const dates = useMemo(
-    () => viewMode === 'week' ? getWeekDates(selectedDate) : [-1, 0, 1].map((offset) => addDays(selectedDate, offset)),
-    [selectedDate, viewMode],
-  );
+  const dates = useMemo(() => {
+    if (viewMode === 'week') return getWeekDates(selectedDate);
+    if (viewMode === 'month') return getMonthCells(selectedDate).map((cell) => cell.date);
+    return [-1, 0, 1].map((offset) => addDays(selectedDate, offset));
+  }, [selectedDate, viewMode]);
+  const holidaysByDate = useMemo(() => groupKoreanHolidays(koreanHolidays), []);
   const dateStrings = useMemo(() => dates.map(toLocalDateString), [dates]);
   const schedulesByDate = useMemo(
     () => groupSchedulesByDate(schedules, '', dateStrings),
@@ -78,6 +87,7 @@ export default function MobileCalendarScreen({
   );
   const selectedDateString = toLocalDateString(selectedDate);
   const selectedSchedules = schedulesByDate.get(selectedDateString) || [];
+  const selectedHolidays = holidaysByDate.get(selectedDateString) || [];
   const allSchedulesSorted = useMemo(
     () => [...schedules].sort((a, b) =>
       a.dateString === b.dateString
@@ -114,7 +124,7 @@ export default function MobileCalendarScreen({
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold text-on-surface-variant">
-            {viewMode === 'week' ? '주간 일정' : viewMode === 'all' ? '전체 일정' : '당일 일정'}
+            {viewMode === 'week' ? '주간 일정' : viewMode === 'month' ? '월간 일정' : viewMode === 'all' ? '전체 일정' : '당일 일정'}
           </p>
           <h1 className="truncate !text-base font-bold text-on-surface">
             {viewMode === 'all' ? '모든 일정' : formatFullDate(selectedDate)}
@@ -144,6 +154,15 @@ export default function MobileCalendarScreen({
           </button>
           <button
             type="button"
+            aria-pressed={viewMode === 'month'}
+            aria-label="월간"
+            onClick={() => setViewMode('month')}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${viewMode === 'month' ? 'bg-primary text-white shadow-soft' : 'text-on-surface-variant'}`}
+          >
+            <CalendarDays className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
             aria-pressed={viewMode === 'all'}
             aria-label="전체"
             onClick={() => setViewMode('all')}
@@ -158,19 +177,19 @@ export default function MobileCalendarScreen({
         <div className="flex items-center justify-between px-4 pb-2 pt-3">
           <button
             type="button"
-            aria-label={viewMode === 'week' ? '이전 주' : '이전 날짜'}
-            onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? -7 : -1))}
+            aria-label={viewMode === 'week' ? '이전 주' : viewMode === 'month' ? '이전 달' : '이전 날짜'}
+            onClick={() => setSelectedDate((date) => viewMode === 'month' ? shiftCalendarDate(date, 'month', -1) : addDays(date, viewMode === 'week' ? -7 : -1))}
             className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <p className="text-sm font-bold text-on-surface">
-            {viewMode === 'week' ? formatWeekRange(dates) : `${formatDate(selectedDate)} 일정`}
+            {viewMode === 'week' ? formatWeekRange(dates) : viewMode === 'month' ? formatCalendarPeriod(selectedDate, 'month') : `${formatDate(selectedDate)} 일정`}
           </p>
           <button
             type="button"
-            aria-label={viewMode === 'week' ? '다음 주' : '다음 날짜'}
-            onClick={() => setSelectedDate((date) => addDays(date, viewMode === 'week' ? 7 : 1))}
+            aria-label={viewMode === 'week' ? '다음 주' : viewMode === 'month' ? '다음 달' : '다음 날짜'}
+            onClick={() => setSelectedDate((date) => viewMode === 'month' ? shiftCalendarDate(date, 'month', 1) : addDays(date, viewMode === 'week' ? 7 : 1))}
             className="flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant active:bg-surface-container"
           >
             <ChevronRight className="h-5 w-5" />
@@ -178,7 +197,7 @@ export default function MobileCalendarScreen({
         </div>
       )}
 
-      {viewMode !== 'all' && (
+      {(viewMode === 'day' || viewMode === 'week') && (
         <div
           className={viewMode === 'week' ? 'no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3' : 'grid grid-cols-3 gap-2 px-3 pb-3'}
           aria-label={viewMode === 'week' ? '주간 일정 카드' : '전날 오늘 다음날 일정 카드'}
@@ -216,6 +235,20 @@ export default function MobileCalendarScreen({
       )}
 
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-20 pt-3">
+        {viewMode === 'month' && (
+          <div className="mb-3 space-y-2">
+            <MobileMonthGrid
+              selectedDate={selectedDate}
+              schedulesByDate={schedulesByDate}
+              holidaysByDate={holidaysByDate}
+              onSelectDate={setSelectedDate}
+            />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <p className="text-xs font-bold text-on-surface">{formatDate(selectedDate)} 일정 {selectedSchedules.length}개</p>
+              <HolidayBadges holidays={selectedHolidays} compact />
+            </div>
+          </div>
+        )}
         {viewMode === 'all' ? (
           allSchedulesSorted.length === 0 ? (
             <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-outline-variant text-center text-on-surface-variant">
